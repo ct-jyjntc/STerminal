@@ -41,7 +41,7 @@ class SterminalShell extends StatelessWidget {
               color: Theme.of(context).colorScheme.surface,
               child: Column(
                 children: [
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 48),
                   Expanded(
                     child: NavigationRail(
                       selectedIndex: selectedIndex,

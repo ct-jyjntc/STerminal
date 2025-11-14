@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sterminal/src/l10n/l10n.dart';
-
 import 'package:sterminal/src/widgets/list_item_card.dart';
+
 import '../application/settings_controller.dart';
 
 class SettingsPage extends ConsumerWidget {
@@ -15,8 +15,6 @@ class SettingsPage extends ConsumerWidget {
     final l10n = context.l10n;
 
     final primaryColor = Theme.of(context).colorScheme.primary;
-    final accent = Theme.of(context).colorScheme.secondary;
-    final tertiary = Theme.of(context).colorScheme.tertiary;
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -67,32 +65,6 @@ class SettingsPage extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             ListItemCard(
-              leading: l10n.settingsSync.characters.first.toUpperCase(),
-              accentColor: accent,
-              title: l10n.settingsSync,
-              subtitle: l10n.settingsSyncSubtitle,
-              actions: [
-                Switch.adaptive(
-                  value: settings.syncEnabled,
-                  onChanged: controller.toggleSync,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ListItemCard(
-              leading: l10n.settingsBiometric.characters.first.toUpperCase(),
-              accentColor: tertiary,
-              title: l10n.settingsBiometric,
-              subtitle: l10n.settingsBiometricSubtitle,
-              actions: [
-                Switch.adaptive(
-                  value: settings.biometricLock,
-                  onChanged: controller.toggleBiometric,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ListItemCard(
               leading: l10n.settingsConfirm.characters.first.toUpperCase(),
               accentColor: primaryColor,
               title: l10n.settingsConfirm,
@@ -105,25 +77,6 @@ class SettingsPage extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 12),
-            ListItemCard(
-              leading: l10n.settingsExport.characters.first.toUpperCase(),
-              accentColor: accent,
-              title: l10n.settingsExport,
-              subtitle: l10n.settingsExportSubtitle,
-              actions: [
-                IconButton(
-                  tooltip: l10n.settingsExport,
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(l10n.settingsExportComingSoon),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.download_outlined),
-                ),
-              ],
-            ),
           ],
         ),
       ),

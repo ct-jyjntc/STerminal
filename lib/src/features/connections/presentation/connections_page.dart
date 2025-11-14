@@ -8,6 +8,7 @@ import '../../../domain/models/group.dart';
 import '../../../domain/models/host.dart';
 import '../../../routing/app_route.dart';
 import '../../groups/application/group_providers.dart';
+import '../../settings/application/settings_controller.dart';
 import '../../vault/application/credential_providers.dart';
 import '../application/hosts_providers.dart';
 import 'widgets/host_card.dart';
@@ -66,14 +67,8 @@ class ConnectionsPage extends ConsumerWidget {
                           onTap: () =>
                               ref.read(selectedHostProvider.notifier).state =
                                   host.id,
-                          onConnectRequested: () {
-                            ref.read(selectedHostProvider.notifier).state =
-                                host.id;
-                            context.pushNamed(
-                              AppRoute.terminal.name,
-                              pathParameters: {'hostId': host.id},
-                            );
-                          },
+                          onConnectRequested: () =>
+                              _handleConnect(context, ref, host),
                           onEditRequested: () => showHostFormSheet(
                             context,
                             host: host,
@@ -125,6 +120,51 @@ class ConnectionsPage extends ConsumerWidget {
         selectedNotifier.state = null;
       }
     }
+  }
+
+  Future<void> _handleConnect(
+    BuildContext context,
+    WidgetRef ref,
+    Host host,
+  ) async {
+    final allowed = await _maybeConfirmConnect(context, ref, host);
+    if (!allowed) return;
+    ref.read(selectedHostProvider.notifier).state = host.id;
+    if (!context.mounted) return;
+    context.pushNamed(
+      AppRoute.terminal.name,
+      pathParameters: {'hostId': host.id},
+    );
+  }
+
+  Future<bool> _maybeConfirmConnect(
+    BuildContext context,
+    WidgetRef ref,
+    Host host,
+  ) async {
+    final settings = ref.read(settingsControllerProvider);
+    if (!settings.confirmBeforeConnect) {
+      return true;
+    }
+    final l10n = context.l10n;
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.settingsConfirmDialogTitle(host.name)),
+        content: Text(l10n.settingsConfirmDialogMessage(host.name)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.hostConnect),
+          ),
+        ],
+      ),
+    );
+    return result == true;
   }
 }
 

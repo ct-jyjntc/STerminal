@@ -291,31 +291,68 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsThemeSystem => '系统';
 
   @override
-  String get settingsSync => '安全同步';
-
-  @override
-  String get settingsSyncSubtitle => '同步主机与凭证';
-
-  @override
-  String get settingsBiometric => '生物认证';
-
-  @override
-  String get settingsBiometricSubtitle => '需要 Touch ID / Face ID';
-
-  @override
   String get settingsConfirm => '连接确认';
 
   @override
   String get settingsConfirmSubtitle => '连接前弹出确认';
 
   @override
+  String settingsConfirmDialogTitle(String name) {
+    return '连接到 $name？';
+  }
+
+  @override
+  String settingsConfirmDialogMessage(String name) {
+    return '将为 $name 打开新的终端会话，确认继续？';
+  }
+
+  @override
+  String get settingsImport => '导入数据';
+
+  @override
+  String get settingsImportSubtitle => '使用备份覆盖本地数据';
+
+  @override
+  String get settingsImportAction => '导入';
+
+  @override
+  String get settingsImportSuccess => '导入完成';
+
+  @override
+  String settingsImportFailure(String error) {
+    return '导入失败：$error';
+  }
+
+  @override
+  String get settingsImportCancelled => '已取消导入';
+
+  @override
+  String get settingsImportConfirmTitle => '要覆盖现有数据吗？';
+
+  @override
+  String get settingsImportConfirmMessage => '当前所有主机、分组、凭证与脚本都会被备份数据替换。';
+
+  @override
   String get settingsExport => '导出数据';
 
   @override
-  String get settingsExportSubtitle => '生成加密备份';
+  String get settingsExportSubtitle => '生成主机与凭证备份';
 
   @override
-  String get settingsExportComingSoon => '导出功能即将上线。';
+  String get settingsExportAction => '导出';
+
+  @override
+  String settingsExportSuccess(String path) {
+    return '备份已保存到 $path';
+  }
+
+  @override
+  String settingsExportFailure(String error) {
+    return '导出失败：$error';
+  }
+
+  @override
+  String get settingsExportCancelled => '已取消导出';
 
   @override
   String genericErrorMessage(String error) {

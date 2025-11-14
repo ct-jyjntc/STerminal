@@ -11,26 +11,18 @@ const _settingsKey = 'settings/v1';
 class SettingsState {
   const SettingsState({
     required this.themeMode,
-    required this.syncEnabled,
-    required this.biometricLock,
     required this.confirmBeforeConnect,
   });
 
   final ThemeMode themeMode;
-  final bool syncEnabled;
-  final bool biometricLock;
   final bool confirmBeforeConnect;
 
   SettingsState copyWith({
     ThemeMode? themeMode,
-    bool? syncEnabled,
-    bool? biometricLock,
     bool? confirmBeforeConnect,
   }) {
     return SettingsState(
       themeMode: themeMode ?? this.themeMode,
-      syncEnabled: syncEnabled ?? this.syncEnabled,
-      biometricLock: biometricLock ?? this.biometricLock,
       confirmBeforeConnect:
           confirmBeforeConnect ?? this.confirmBeforeConnect,
     );
@@ -38,8 +30,6 @@ class SettingsState {
 
   Map<String, dynamic> toJson() => {
         'themeMode': themeMode.name,
-        'syncEnabled': syncEnabled,
-        'biometricLock': biometricLock,
         'confirmBeforeConnect': confirmBeforeConnect,
       };
 
@@ -48,16 +38,12 @@ class SettingsState {
     return SettingsState(
       themeMode: ThemeMode.values
           .firstWhere((mode) => mode.name == themeName, orElse: () => ThemeMode.dark),
-      syncEnabled: json['syncEnabled'] as bool? ?? true,
-      biometricLock: json['biometricLock'] as bool? ?? false,
       confirmBeforeConnect: json['confirmBeforeConnect'] as bool? ?? true,
     );
   }
 
   static SettingsState defaults() => const SettingsState(
         themeMode: ThemeMode.dark,
-        syncEnabled: true,
-        biometricLock: false,
         confirmBeforeConnect: true,
       );
 }
@@ -77,16 +63,6 @@ class SettingsController extends StateNotifier<SettingsState> {
 
   void setThemeMode(ThemeMode mode) {
     state = state.copyWith(themeMode: mode);
-    _persist();
-  }
-
-  void toggleSync(bool value) {
-    state = state.copyWith(syncEnabled: value);
-    _persist();
-  }
-
-  void toggleBiometric(bool value) {
-    state = state.copyWith(biometricLock: value);
     _persist();
   }
 

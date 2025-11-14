@@ -632,30 +632,6 @@ abstract class AppLocalizations {
   /// **'System'**
   String get settingsThemeSystem;
 
-  /// No description provided for @settingsSync.
-  ///
-  /// In en, this message translates to:
-  /// **'Secure sync'**
-  String get settingsSync;
-
-  /// No description provided for @settingsSyncSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Sync hosts and credentials'**
-  String get settingsSyncSubtitle;
-
-  /// No description provided for @settingsBiometric.
-  ///
-  /// In en, this message translates to:
-  /// **'Biometric lock'**
-  String get settingsBiometric;
-
-  /// No description provided for @settingsBiometricSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Require Touch ID / Face ID'**
-  String get settingsBiometricSubtitle;
-
   /// No description provided for @settingsConfirm.
   ///
   /// In en, this message translates to:
@@ -668,6 +644,66 @@ abstract class AppLocalizations {
   /// **'Prompt before opening remote session'**
   String get settingsConfirmSubtitle;
 
+  /// No description provided for @settingsConfirmDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to {name}?'**
+  String settingsConfirmDialogTitle(String name);
+
+  /// No description provided for @settingsConfirmDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'A terminal session will open for {name}. Continue?'**
+  String settingsConfirmDialogMessage(String name);
+
+  /// No description provided for @settingsImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Import data'**
+  String get settingsImport;
+
+  /// No description provided for @settingsImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace local data with a backup'**
+  String get settingsImportSubtitle;
+
+  /// No description provided for @settingsImportAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get settingsImportAction;
+
+  /// No description provided for @settingsImportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Import completed'**
+  String get settingsImportSuccess;
+
+  /// No description provided for @settingsImportFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed: {error}'**
+  String settingsImportFailure(String error);
+
+  /// No description provided for @settingsImportCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Import cancelled'**
+  String get settingsImportCancelled;
+
+  /// No description provided for @settingsImportConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace existing data?'**
+  String get settingsImportConfirmTitle;
+
+  /// No description provided for @settingsImportConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Current hosts, groups, credentials and scripts will be overwritten.'**
+  String get settingsImportConfirmMessage;
+
   /// No description provided for @settingsExport.
   ///
   /// In en, this message translates to:
@@ -677,14 +713,32 @@ abstract class AppLocalizations {
   /// No description provided for @settingsExportSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Generate encrypted backup of local content'**
+  /// **'Create a backup of hosts and credentials'**
   String get settingsExportSubtitle;
 
-  /// No description provided for @settingsExportComingSoon.
+  /// No description provided for @settingsExportAction.
   ///
   /// In en, this message translates to:
-  /// **'Export coming soon.'**
-  String get settingsExportComingSoon;
+  /// **'Export'**
+  String get settingsExportAction;
+
+  /// No description provided for @settingsExportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup saved to {path}'**
+  String settingsExportSuccess(String path);
+
+  /// No description provided for @settingsExportFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Export failed: {error}'**
+  String settingsExportFailure(String error);
+
+  /// No description provided for @settingsExportCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Export cancelled'**
+  String get settingsExportCancelled;
 
   /// No description provided for @genericErrorMessage.
   ///

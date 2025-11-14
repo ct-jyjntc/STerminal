@@ -124,15 +124,59 @@
   "settingsThemeLight": "Light",
   "settingsThemeDark": "Dark",
   "settingsThemeSystem": "System",
-  "settingsSync": "Secure sync",
-  "settingsSyncSubtitle": "Sync hosts and credentials",
-  "settingsBiometric": "Biometric lock",
-  "settingsBiometricSubtitle": "Require Touch ID / Face ID",
   "settingsConfirm": "Connection confirmation",
   "settingsConfirmSubtitle": "Prompt before opening remote session",
+  "settingsConfirmDialogTitle": "Connect to {name}?",
+  "@settingsConfirmDialogTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsConfirmDialogMessage": "A terminal session will open for {name}. Continue?",
+  "@settingsConfirmDialogMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsImport": "Import data",
+  "settingsImportSubtitle": "Replace local data with a backup",
+  "settingsImportAction": "Import",
+  "settingsImportSuccess": "Import completed",
+  "settingsImportFailure": "Import failed: {error}",
+  "@settingsImportFailure": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsImportCancelled": "Import cancelled",
+  "settingsImportConfirmTitle": "Replace existing data?",
+  "settingsImportConfirmMessage": "Current hosts, groups, credentials and scripts will be overwritten.",
   "settingsExport": "Export data",
-  "settingsExportSubtitle": "Generate encrypted backup of local content",
-  "settingsExportComingSoon": "Export coming soon.",
+  "settingsExportSubtitle": "Create a backup of hosts and credentials",
+  "settingsExportAction": "Export",
+  "settingsExportSuccess": "Backup saved to {path}",
+  "@settingsExportSuccess": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsExportFailure": "Export failed: {error}",
+  "@settingsExportFailure": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsExportCancelled": "Export cancelled",
   "genericErrorMessage": "Error: {error}",
   "@genericErrorMessage": {
     "placeholders": {

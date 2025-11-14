@@ -296,32 +296,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsThemeSystem => 'System';
 
   @override
-  String get settingsSync => 'Secure sync';
-
-  @override
-  String get settingsSyncSubtitle => 'Sync hosts and credentials';
-
-  @override
-  String get settingsBiometric => 'Biometric lock';
-
-  @override
-  String get settingsBiometricSubtitle => 'Require Touch ID / Face ID';
-
-  @override
   String get settingsConfirm => 'Connection confirmation';
 
   @override
   String get settingsConfirmSubtitle => 'Prompt before opening remote session';
 
   @override
+  String settingsConfirmDialogTitle(String name) {
+    return 'Connect to $name?';
+  }
+
+  @override
+  String settingsConfirmDialogMessage(String name) {
+    return 'A terminal session will open for $name. Continue?';
+  }
+
+  @override
+  String get settingsImport => 'Import data';
+
+  @override
+  String get settingsImportSubtitle => 'Replace local data with a backup';
+
+  @override
+  String get settingsImportAction => 'Import';
+
+  @override
+  String get settingsImportSuccess => 'Import completed';
+
+  @override
+  String settingsImportFailure(String error) {
+    return 'Import failed: $error';
+  }
+
+  @override
+  String get settingsImportCancelled => 'Import cancelled';
+
+  @override
+  String get settingsImportConfirmTitle => 'Replace existing data?';
+
+  @override
+  String get settingsImportConfirmMessage =>
+      'Current hosts, groups, credentials and scripts will be overwritten.';
+
+  @override
   String get settingsExport => 'Export data';
 
   @override
   String get settingsExportSubtitle =>
-      'Generate encrypted backup of local content';
+      'Create a backup of hosts and credentials';
 
   @override
-  String get settingsExportComingSoon => 'Export coming soon.';
+  String get settingsExportAction => 'Export';
+
+  @override
+  String settingsExportSuccess(String path) {
+    return 'Backup saved to $path';
+  }
+
+  @override
+  String settingsExportFailure(String error) {
+    return 'Export failed: $error';
+  }
+
+  @override
+  String get settingsExportCancelled => 'Export cancelled';
 
   @override
   String genericErrorMessage(String error) {

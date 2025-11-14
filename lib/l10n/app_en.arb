@@ -1,0 +1,212 @@
+{
+  "@@locale": "en",
+  "appTitle": "STerminal",
+  "commonCancel": "Cancel",
+  "commonDelete": "Delete",
+  "connectionsTitle": "Connections",
+  "connectionsNewHost": "New host",
+  "connectionsSearchHint": "Search by host, tag or address",
+  "connectionsFavorites": "Favorites",
+  "filterAll": "All",
+  "filterUngrouped": "Ungrouped",
+  "connectionsLoadError": "Failed to load hosts: {error}",
+  "@connectionsLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "hostInspectorLoadError": "Failed to load host: {error}",
+  "@hostInspectorLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "hostInspectorEmpty": "Select a host to inspect",
+  "hostCreateButton": "Create host",
+  "hostConnect": "Connect",
+  "hostEdit": "Edit host",
+  "hostDeleteTooltip": "Delete host",
+  "hostDeleteTitle": "Delete host",
+  "hostDeleteMessage": "Are you sure you want to remove {name}?",
+  "@hostDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "hostNoDescription": "No description",
+  "hostNoTags": "No tags",
+  "hostMissingCredential": "Missing credential",
+  "hostInspectorEndpoint": "Endpoint",
+  "hostInspectorCredential": "Credential",
+  "hostInspectorTags": "Tags",
+  "hostFormTitleNew": "New host",
+  "hostFormTitleEdit": "Edit host",
+  "hostFormDisplayName": "Display name",
+  "hostFormHostLabel": "Host / IP",
+  "hostFormPortLabel": "Port",
+  "hostFormCredentialLabel": "Credential",
+  "hostFormSelectCredential": "Select credential",
+  "hostFormCreateCredential": "Create credential",
+  "hostFormGroupLabel": "Group",
+  "hostFormNoGroupOption": "No group",
+  "hostFormDescriptionLabel": "Description",
+  "hostFormTagsLabel": "Tags (comma separated)",
+  "hostFormAccentLabel": "Accent",
+  "hostFormFavoriteLabel": "Favorite",
+  "hostFormSave": "Save host",
+  "hostFormValidation": "Name, host, and credential are required.",
+  "hostFormInlineToggle": "Enter credential manually",
+  "hostFormInlineCancel": "Use saved credential",
+  "hostFormCredentialInlineTitle": "Credential details",
+  "hostFormCredentialInlineRequired": "Fill in complete credential information.",
+  "hostFormCredentialMissing": "Please select or create a credential first.",
+  "groupsTitle": "Groups",
+  "groupsNew": "New group",
+  "groupsNoDescription": "No description",
+  "groupsHostCount": "{count, plural, one {{count} host} other {{count} hosts}}",
+  "@groupsHostCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupsDeleteTitle": "Delete group",
+  "groupsDeleteMessage": "Hosts in this group will become ungrouped.",
+  "groupFormTitleNew": "Add group",
+  "groupFormTitleEdit": "Edit group",
+  "groupFormNameLabel": "Group name",
+  "groupFormDescriptionLabel": "Description",
+  "groupFormSave": "Save group",
+  "groupFormValidation": "Name is required.",
+  "snippetsTitle": "Scripts",
+  "snippetsNew": "New snippet",
+  "snippetsEmpty": "No snippets yet",
+  "snippetsPanelHint": "Create snippets to quick send",
+  "snippetsCopyMessage": "Copied command",
+  "snippetsDeleteTitle": "Delete snippet",
+  "snippetsDeleteMessage": "Are you sure you want to delete {title}?",
+  "@snippetsDeleteMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "snippetFormTitleNew": "New snippet",
+  "snippetFormTitleEdit": "Edit snippet",
+  "snippetFormTitleLabel": "Title",
+  "snippetFormCommandLabel": "Command",
+  "snippetFormDescriptionLabel": "Description",
+  "snippetFormTagsLabel": "Tags",
+  "snippetFormSave": "Save snippet",
+  "snippetFormValidation": "Title and command are required.",
+  "vaultTitle": "Credentials",
+  "vaultNew": "New credential",
+  "vaultEmpty": "No credentials yet",
+  "vaultDeleteTitle": "Delete credential",
+  "vaultDeleteMessage": "Hosts referencing this credential will need to be updated manually.",
+  "credentialFormTitleNew": "Add credential",
+  "credentialFormTitleEdit": "Edit credential",
+  "credentialFormLabel": "Label",
+  "credentialFormUsername": "Username",
+  "credentialFormPassword": "Password",
+  "credentialFormKeyPair": "Key pair",
+  "credentialFormPrivateKey": "Private key (PEM)",
+  "credentialFormPassphrase": "Passphrase (optional)",
+  "credentialFormSave": "Save credential",
+  "credentialFormValidation": "Name and username are required.",
+  "credentialAuthPassword": "Password",
+  "credentialAuthKeyPair": "Key pair",
+  "credentialUnknownUser": "unknown",
+  "settingsTitle": "Settings",
+  "settingsAppearance": "Appearance",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsThemeSystem": "System",
+  "settingsSync": "Secure sync",
+  "settingsSyncSubtitle": "Sync hosts and credentials",
+  "settingsBiometric": "Biometric lock",
+  "settingsBiometricSubtitle": "Require Touch ID / Face ID",
+  "settingsConfirm": "Connection confirmation",
+  "settingsConfirmSubtitle": "Prompt before opening remote session",
+  "settingsExport": "Export data",
+  "settingsExportSubtitle": "Generate encrypted backup of local content",
+  "settingsExportComingSoon": "Export coming soon.",
+  "genericErrorMessage": "Error: {error}",
+  "@genericErrorMessage": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "hostLastConnectedNever": "Never connected",
+  "hostLastConnectedJustNow": "Connected just now",
+  "hostLastConnectedMinutes": "Connected {minutes}m ago",
+  "@hostLastConnectedMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "hostLastConnectedHours": "Connected {hours}h ago",
+  "@hostLastConnectedHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "hostLastConnectedDays": "Connected {days}d ago",
+  "@hostLastConnectedDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "terminalReconnectTooltip": "Reconnect",
+  "terminalNewSnippetTooltip": "New snippet",
+  "terminalCredentialDeleted": "Credential deleted",
+  "terminalCredentialError": "Credential error: {error}",
+  "@terminalCredentialError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "terminalHostRemoved": "Host removed",
+  "terminalHostError": "Host not found: {error}",
+  "@terminalHostError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "terminalConnectingMessage": "Connecting to {host}...",
+  "@terminalConnectingMessage": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "terminalConnectionFailed": "Connection failed: {error}",
+  "@terminalConnectionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
+}

@@ -1,0 +1,395 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Chinese (`zh`).
+class AppLocalizationsZh extends AppLocalizations {
+  AppLocalizationsZh([String locale = 'zh']) : super(locale);
+
+  @override
+  String get appTitle => 'STerminal';
+
+  @override
+  String get commonCancel => '取消';
+
+  @override
+  String get commonDelete => '删除';
+
+  @override
+  String get connectionsTitle => '连接';
+
+  @override
+  String get connectionsNewHost => '新建主机';
+
+  @override
+  String get connectionsSearchHint => '按主机、标签或地址搜索';
+
+  @override
+  String get connectionsFavorites => '收藏';
+
+  @override
+  String get filterAll => '全部';
+
+  @override
+  String get filterUngrouped => '未分组';
+
+  @override
+  String connectionsLoadError(String error) {
+    return '加载主机失败：$error';
+  }
+
+  @override
+  String hostInspectorLoadError(String error) {
+    return '加载主机失败：$error';
+  }
+
+  @override
+  String get hostInspectorEmpty => '选择一台主机以查看详情';
+
+  @override
+  String get hostCreateButton => '创建主机';
+
+  @override
+  String get hostConnect => '连接';
+
+  @override
+  String get hostEdit => '编辑主机';
+
+  @override
+  String get hostDeleteTooltip => '删除主机';
+
+  @override
+  String get hostDeleteTitle => '删除主机';
+
+  @override
+  String hostDeleteMessage(String name) {
+    return '确定要删除 $name 吗？';
+  }
+
+  @override
+  String get hostNoDescription => '暂无描述';
+
+  @override
+  String get hostNoTags => '暂无标签';
+
+  @override
+  String get hostMissingCredential => '凭证缺失';
+
+  @override
+  String get hostInspectorEndpoint => '终端地址';
+
+  @override
+  String get hostInspectorCredential => '凭证';
+
+  @override
+  String get hostInspectorTags => '标签';
+
+  @override
+  String get hostFormTitleNew => '新建主机';
+
+  @override
+  String get hostFormTitleEdit => '编辑主机';
+
+  @override
+  String get hostFormDisplayName => '显示名称';
+
+  @override
+  String get hostFormHostLabel => '主机 / IP';
+
+  @override
+  String get hostFormPortLabel => '端口';
+
+  @override
+  String get hostFormCredentialLabel => '凭证';
+
+  @override
+  String get hostFormSelectCredential => '选择凭证';
+
+  @override
+  String get hostFormCreateCredential => '新建凭证';
+
+  @override
+  String get hostFormGroupLabel => '分组';
+
+  @override
+  String get hostFormNoGroupOption => '无分组';
+
+  @override
+  String get hostFormDescriptionLabel => '描述';
+
+  @override
+  String get hostFormTagsLabel => '标签（以逗号分隔）';
+
+  @override
+  String get hostFormAccentLabel => '颜色';
+
+  @override
+  String get hostFormFavoriteLabel => '收藏';
+
+  @override
+  String get hostFormSave => '保存主机';
+
+  @override
+  String get hostFormValidation => '请填写名称、主机地址和凭证。';
+
+  @override
+  String get hostFormInlineToggle => '手动填写凭证';
+
+  @override
+  String get hostFormInlineCancel => '使用已有凭证';
+
+  @override
+  String get hostFormCredentialInlineTitle => '凭证信息';
+
+  @override
+  String get hostFormCredentialInlineRequired => '请填写完整的凭证信息。';
+
+  @override
+  String get hostFormCredentialMissing => '请先选择或创建凭证。';
+
+  @override
+  String get groupsTitle => '分组';
+
+  @override
+  String get groupsNew => '新建分组';
+
+  @override
+  String get groupsNoDescription => '暂无描述';
+
+  @override
+  String groupsHostCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 台主机',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupsDeleteTitle => '删除分组';
+
+  @override
+  String get groupsDeleteMessage => '该分组下的主机将变为未分组。';
+
+  @override
+  String get groupFormTitleNew => '新增分组';
+
+  @override
+  String get groupFormTitleEdit => '编辑分组';
+
+  @override
+  String get groupFormNameLabel => '分组名称';
+
+  @override
+  String get groupFormDescriptionLabel => '描述';
+
+  @override
+  String get groupFormSave => '保存分组';
+
+  @override
+  String get groupFormValidation => '名称不能为空。';
+
+  @override
+  String get snippetsTitle => '脚本';
+
+  @override
+  String get snippetsNew => '新建片段';
+
+  @override
+  String get snippetsEmpty => '暂无片段';
+
+  @override
+  String get snippetsPanelHint => '创建片段以便快速发送';
+
+  @override
+  String get snippetsCopyMessage => '已复制命令';
+
+  @override
+  String get snippetsDeleteTitle => '删除片段';
+
+  @override
+  String snippetsDeleteMessage(String title) {
+    return '确定删除 $title 吗？';
+  }
+
+  @override
+  String get snippetFormTitleNew => '新建片段';
+
+  @override
+  String get snippetFormTitleEdit => '编辑片段';
+
+  @override
+  String get snippetFormTitleLabel => '标题';
+
+  @override
+  String get snippetFormCommandLabel => '命令';
+
+  @override
+  String get snippetFormDescriptionLabel => '描述';
+
+  @override
+  String get snippetFormTagsLabel => '标签';
+
+  @override
+  String get snippetFormSave => '保存片段';
+
+  @override
+  String get snippetFormValidation => '标题和命令不能为空。';
+
+  @override
+  String get vaultTitle => '凭证';
+
+  @override
+  String get vaultNew => '新建凭证';
+
+  @override
+  String get vaultEmpty => '暂无凭证';
+
+  @override
+  String get vaultDeleteTitle => '删除凭证';
+
+  @override
+  String get vaultDeleteMessage => '引用该凭证的主机需要手动更新。';
+
+  @override
+  String get credentialFormTitleNew => '新增凭证';
+
+  @override
+  String get credentialFormTitleEdit => '编辑凭证';
+
+  @override
+  String get credentialFormLabel => '标签';
+
+  @override
+  String get credentialFormUsername => '用户名';
+
+  @override
+  String get credentialFormPassword => '密码';
+
+  @override
+  String get credentialFormKeyPair => '密钥对';
+
+  @override
+  String get credentialFormPrivateKey => '私钥（PEM）';
+
+  @override
+  String get credentialFormPassphrase => '密钥密码（可选）';
+
+  @override
+  String get credentialFormSave => '保存凭证';
+
+  @override
+  String get credentialFormValidation => '名称和用户名不能为空。';
+
+  @override
+  String get credentialAuthPassword => '密码';
+
+  @override
+  String get credentialAuthKeyPair => '密钥对';
+
+  @override
+  String get credentialUnknownUser => '未知用户';
+
+  @override
+  String get settingsTitle => '设置';
+
+  @override
+  String get settingsAppearance => '外观';
+
+  @override
+  String get settingsThemeLight => '浅色';
+
+  @override
+  String get settingsThemeDark => '深色';
+
+  @override
+  String get settingsThemeSystem => '跟随系统';
+
+  @override
+  String get settingsSync => '安全同步';
+
+  @override
+  String get settingsSyncSubtitle => '同步主机与凭证';
+
+  @override
+  String get settingsBiometric => '生物认证';
+
+  @override
+  String get settingsBiometricSubtitle => '需要 Touch ID / Face ID';
+
+  @override
+  String get settingsConfirm => '连接确认';
+
+  @override
+  String get settingsConfirmSubtitle => '连接前弹出确认';
+
+  @override
+  String get settingsExport => '导出数据';
+
+  @override
+  String get settingsExportSubtitle => '生成加密备份';
+
+  @override
+  String get settingsExportComingSoon => '导出功能即将上线。';
+
+  @override
+  String genericErrorMessage(String error) {
+    return '错误：$error';
+  }
+
+  @override
+  String get hostLastConnectedNever => '从未连接';
+
+  @override
+  String get hostLastConnectedJustNow => '刚刚连接';
+
+  @override
+  String hostLastConnectedMinutes(int minutes) {
+    return '$minutes 分钟前连接';
+  }
+
+  @override
+  String hostLastConnectedHours(int hours) {
+    return '$hours 小时前连接';
+  }
+
+  @override
+  String hostLastConnectedDays(int days) {
+    return '$days 天前连接';
+  }
+
+  @override
+  String get terminalReconnectTooltip => '重新连接';
+
+  @override
+  String get terminalNewSnippetTooltip => '新建片段';
+
+  @override
+  String get terminalCredentialDeleted => '凭证已删除';
+
+  @override
+  String terminalCredentialError(String error) {
+    return '凭证错误：$error';
+  }
+
+  @override
+  String get terminalHostRemoved => '主机已删除';
+
+  @override
+  String terminalHostError(String error) {
+    return '无法找到主机：$error';
+  }
+
+  @override
+  String terminalConnectingMessage(String host) {
+    return '正在连接 $host...';
+  }
+
+  @override
+  String terminalConnectionFailed(String error) {
+    return '连接失败：$error';
+  }
+}

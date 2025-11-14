@@ -1,0 +1,842 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations_en.dart';
+import 'app_localizations_zh.dart';
+
+// ignore_for_file: type=lint
+
+/// Callers can lookup localized strings with an instance of AppLocalizations
+/// returned by `AppLocalizations.of(context)`.
+///
+/// Applications need to include `AppLocalizations.delegate()` in their app's
+/// `localizationDelegates` list, and the locales they support in the app's
+/// `supportedLocales` list. For example:
+///
+/// ```dart
+/// import 'l10n/app_localizations.dart';
+///
+/// return MaterialApp(
+///   localizationsDelegates: AppLocalizations.localizationsDelegates,
+///   supportedLocales: AppLocalizations.supportedLocales,
+///   home: MyApplicationHome(),
+/// );
+/// ```
+///
+/// ## Update pubspec.yaml
+///
+/// Please make sure to update your pubspec.yaml to include the following
+/// packages:
+///
+/// ```yaml
+/// dependencies:
+///   # Internationalization support.
+///   flutter_localizations:
+///     sdk: flutter
+///   intl: any # Use the pinned version from flutter_localizations
+///
+///   # Rest of dependencies
+/// ```
+///
+/// ## iOS Applications
+///
+/// iOS applications define key application metadata, including supported
+/// locales, in an Info.plist file that is built into the application bundle.
+/// To configure the locales supported by your app, you’ll need to edit this
+/// file.
+///
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// Then, in the Project Navigator, open the Info.plist file under the Runner
+/// project’s Runner folder.
+///
+/// Next, select the Information Property List item, select Add Item from the
+/// Editor menu, then select Localizations from the pop-up menu.
+///
+/// Select and expand the newly-created Localizations item then, for each
+/// locale your application supports, add a new item and select the locale
+/// you wish to add from the pop-up menu in the Value field. This list should
+/// be consistent with the languages listed in the AppLocalizations.supportedLocales
+/// property.
+abstract class AppLocalizations {
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+
+  final String localeName;
+
+  static AppLocalizations? of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations);
+  }
+
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
+
+  /// A list of this localizations delegate along with the default localizations
+  /// delegates.
+  ///
+  /// Returns a list of localizations delegates containing this delegate along with
+  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
+  /// and GlobalWidgetsLocalizations.delegate.
+  ///
+  /// Additional delegates can be added by appending to this list in
+  /// MaterialApp. This list does not have to be used at all if a custom list
+  /// of delegates is preferred or required.
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
+
+  /// A list of this localizations delegate's supported locales.
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('zh'),
+  ];
+
+  /// No description provided for @appTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'STerminal'**
+  String get appTitle;
+
+  /// No description provided for @commonCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get commonCancel;
+
+  /// No description provided for @commonDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get commonDelete;
+
+  /// No description provided for @connectionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connections'**
+  String get connectionsTitle;
+
+  /// No description provided for @connectionsNewHost.
+  ///
+  /// In en, this message translates to:
+  /// **'New host'**
+  String get connectionsNewHost;
+
+  /// No description provided for @connectionsSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by host, tag or address'**
+  String get connectionsSearchHint;
+
+  /// No description provided for @connectionsFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get connectionsFavorites;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get filterAll;
+
+  /// No description provided for @filterUngrouped.
+  ///
+  /// In en, this message translates to:
+  /// **'Ungrouped'**
+  String get filterUngrouped;
+
+  /// No description provided for @connectionsLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load hosts: {error}'**
+  String connectionsLoadError(String error);
+
+  /// No description provided for @hostInspectorLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load host: {error}'**
+  String hostInspectorLoadError(String error);
+
+  /// No description provided for @hostInspectorEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a host to inspect'**
+  String get hostInspectorEmpty;
+
+  /// No description provided for @hostCreateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create host'**
+  String get hostCreateButton;
+
+  /// No description provided for @hostConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get hostConnect;
+
+  /// No description provided for @hostEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit host'**
+  String get hostEdit;
+
+  /// No description provided for @hostDeleteTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete host'**
+  String get hostDeleteTooltip;
+
+  /// No description provided for @hostDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete host'**
+  String get hostDeleteTitle;
+
+  /// No description provided for @hostDeleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove {name}?'**
+  String hostDeleteMessage(String name);
+
+  /// No description provided for @hostNoDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'No description'**
+  String get hostNoDescription;
+
+  /// No description provided for @hostNoTags.
+  ///
+  /// In en, this message translates to:
+  /// **'No tags'**
+  String get hostNoTags;
+
+  /// No description provided for @hostMissingCredential.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing credential'**
+  String get hostMissingCredential;
+
+  /// No description provided for @hostInspectorEndpoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Endpoint'**
+  String get hostInspectorEndpoint;
+
+  /// No description provided for @hostInspectorCredential.
+  ///
+  /// In en, this message translates to:
+  /// **'Credential'**
+  String get hostInspectorCredential;
+
+  /// No description provided for @hostInspectorTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get hostInspectorTags;
+
+  /// No description provided for @hostFormTitleNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New host'**
+  String get hostFormTitleNew;
+
+  /// No description provided for @hostFormTitleEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit host'**
+  String get hostFormTitleEdit;
+
+  /// No description provided for @hostFormDisplayName.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name'**
+  String get hostFormDisplayName;
+
+  /// No description provided for @hostFormHostLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Host / IP'**
+  String get hostFormHostLabel;
+
+  /// No description provided for @hostFormPortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Port'**
+  String get hostFormPortLabel;
+
+  /// No description provided for @hostFormCredentialLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Credential'**
+  String get hostFormCredentialLabel;
+
+  /// No description provided for @hostFormSelectCredential.
+  ///
+  /// In en, this message translates to:
+  /// **'Select credential'**
+  String get hostFormSelectCredential;
+
+  /// No description provided for @hostFormCreateCredential.
+  ///
+  /// In en, this message translates to:
+  /// **'Create credential'**
+  String get hostFormCreateCredential;
+
+  /// No description provided for @hostFormGroupLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Group'**
+  String get hostFormGroupLabel;
+
+  /// No description provided for @hostFormNoGroupOption.
+  ///
+  /// In en, this message translates to:
+  /// **'No group'**
+  String get hostFormNoGroupOption;
+
+  /// No description provided for @hostFormDescriptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get hostFormDescriptionLabel;
+
+  /// No description provided for @hostFormTagsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags (comma separated)'**
+  String get hostFormTagsLabel;
+
+  /// No description provided for @hostFormAccentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent'**
+  String get hostFormAccentLabel;
+
+  /// No description provided for @hostFormFavoriteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite'**
+  String get hostFormFavoriteLabel;
+
+  /// No description provided for @hostFormSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save host'**
+  String get hostFormSave;
+
+  /// No description provided for @hostFormValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Name, host, and credential are required.'**
+  String get hostFormValidation;
+
+  /// No description provided for @hostFormInlineToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter credential manually'**
+  String get hostFormInlineToggle;
+
+  /// No description provided for @hostFormInlineCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Use saved credential'**
+  String get hostFormInlineCancel;
+
+  /// No description provided for @hostFormCredentialInlineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Credential details'**
+  String get hostFormCredentialInlineTitle;
+
+  /// No description provided for @hostFormCredentialInlineRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in complete credential information.'**
+  String get hostFormCredentialInlineRequired;
+
+  /// No description provided for @hostFormCredentialMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select or create a credential first.'**
+  String get hostFormCredentialMissing;
+
+  /// No description provided for @groupsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Groups'**
+  String get groupsTitle;
+
+  /// No description provided for @groupsNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New group'**
+  String get groupsNew;
+
+  /// No description provided for @groupsNoDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'No description'**
+  String get groupsNoDescription;
+
+  /// No description provided for @groupsHostCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one {{count} host} other {{count} hosts}}'**
+  String groupsHostCount(int count);
+
+  /// No description provided for @groupsDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete group'**
+  String get groupsDeleteTitle;
+
+  /// No description provided for @groupsDeleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Hosts in this group will become ungrouped.'**
+  String get groupsDeleteMessage;
+
+  /// No description provided for @groupFormTitleNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Add group'**
+  String get groupFormTitleNew;
+
+  /// No description provided for @groupFormTitleEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit group'**
+  String get groupFormTitleEdit;
+
+  /// No description provided for @groupFormNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Group name'**
+  String get groupFormNameLabel;
+
+  /// No description provided for @groupFormDescriptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get groupFormDescriptionLabel;
+
+  /// No description provided for @groupFormSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save group'**
+  String get groupFormSave;
+
+  /// No description provided for @groupFormValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Name is required.'**
+  String get groupFormValidation;
+
+  /// No description provided for @snippetsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scripts'**
+  String get snippetsTitle;
+
+  /// No description provided for @snippetsNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New snippet'**
+  String get snippetsNew;
+
+  /// No description provided for @snippetsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No snippets yet'**
+  String get snippetsEmpty;
+
+  /// No description provided for @snippetsPanelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Create snippets to quick send'**
+  String get snippetsPanelHint;
+
+  /// No description provided for @snippetsCopyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied command'**
+  String get snippetsCopyMessage;
+
+  /// No description provided for @snippetsDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete snippet'**
+  String get snippetsDeleteTitle;
+
+  /// No description provided for @snippetsDeleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete {title}?'**
+  String snippetsDeleteMessage(String title);
+
+  /// No description provided for @snippetFormTitleNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New snippet'**
+  String get snippetFormTitleNew;
+
+  /// No description provided for @snippetFormTitleEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit snippet'**
+  String get snippetFormTitleEdit;
+
+  /// No description provided for @snippetFormTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get snippetFormTitleLabel;
+
+  /// No description provided for @snippetFormCommandLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Command'**
+  String get snippetFormCommandLabel;
+
+  /// No description provided for @snippetFormDescriptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get snippetFormDescriptionLabel;
+
+  /// No description provided for @snippetFormTagsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get snippetFormTagsLabel;
+
+  /// No description provided for @snippetFormSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save snippet'**
+  String get snippetFormSave;
+
+  /// No description provided for @snippetFormValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Title and command are required.'**
+  String get snippetFormValidation;
+
+  /// No description provided for @vaultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Credentials'**
+  String get vaultTitle;
+
+  /// No description provided for @vaultNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New credential'**
+  String get vaultNew;
+
+  /// No description provided for @vaultEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No credentials yet'**
+  String get vaultEmpty;
+
+  /// No description provided for @vaultDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete credential'**
+  String get vaultDeleteTitle;
+
+  /// No description provided for @vaultDeleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Hosts referencing this credential will need to be updated manually.'**
+  String get vaultDeleteMessage;
+
+  /// No description provided for @credentialFormTitleNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Add credential'**
+  String get credentialFormTitleNew;
+
+  /// No description provided for @credentialFormTitleEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit credential'**
+  String get credentialFormTitleEdit;
+
+  /// No description provided for @credentialFormLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Label'**
+  String get credentialFormLabel;
+
+  /// No description provided for @credentialFormUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get credentialFormUsername;
+
+  /// No description provided for @credentialFormPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get credentialFormPassword;
+
+  /// No description provided for @credentialFormKeyPair.
+  ///
+  /// In en, this message translates to:
+  /// **'Key pair'**
+  String get credentialFormKeyPair;
+
+  /// No description provided for @credentialFormPrivateKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Private key (PEM)'**
+  String get credentialFormPrivateKey;
+
+  /// No description provided for @credentialFormPassphrase.
+  ///
+  /// In en, this message translates to:
+  /// **'Passphrase (optional)'**
+  String get credentialFormPassphrase;
+
+  /// No description provided for @credentialFormSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save credential'**
+  String get credentialFormSave;
+
+  /// No description provided for @credentialFormValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Name and username are required.'**
+  String get credentialFormValidation;
+
+  /// No description provided for @credentialAuthPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get credentialAuthPassword;
+
+  /// No description provided for @credentialAuthKeyPair.
+  ///
+  /// In en, this message translates to:
+  /// **'Key pair'**
+  String get credentialAuthKeyPair;
+
+  /// No description provided for @credentialUnknownUser.
+  ///
+  /// In en, this message translates to:
+  /// **'unknown'**
+  String get credentialUnknownUser;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// No description provided for @settingsAppearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settingsAppearance;
+
+  /// No description provided for @settingsThemeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get settingsThemeLight;
+
+  /// No description provided for @settingsThemeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get settingsThemeDark;
+
+  /// No description provided for @settingsThemeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get settingsThemeSystem;
+
+  /// No description provided for @settingsSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure sync'**
+  String get settingsSync;
+
+  /// No description provided for @settingsSyncSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync hosts and credentials'**
+  String get settingsSyncSubtitle;
+
+  /// No description provided for @settingsBiometric.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric lock'**
+  String get settingsBiometric;
+
+  /// No description provided for @settingsBiometricSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Require Touch ID / Face ID'**
+  String get settingsBiometricSubtitle;
+
+  /// No description provided for @settingsConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection confirmation'**
+  String get settingsConfirm;
+
+  /// No description provided for @settingsConfirmSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Prompt before opening remote session'**
+  String get settingsConfirmSubtitle;
+
+  /// No description provided for @settingsExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Export data'**
+  String get settingsExport;
+
+  /// No description provided for @settingsExportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate encrypted backup of local content'**
+  String get settingsExportSubtitle;
+
+  /// No description provided for @settingsExportComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Export coming soon.'**
+  String get settingsExportComingSoon;
+
+  /// No description provided for @genericErrorMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String genericErrorMessage(String error);
+
+  /// No description provided for @hostLastConnectedNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Never connected'**
+  String get hostLastConnectedNever;
+
+  /// No description provided for @hostLastConnectedJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected just now'**
+  String get hostLastConnectedJustNow;
+
+  /// No description provided for @hostLastConnectedMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected {minutes}m ago'**
+  String hostLastConnectedMinutes(int minutes);
+
+  /// No description provided for @hostLastConnectedHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected {hours}h ago'**
+  String hostLastConnectedHours(int hours);
+
+  /// No description provided for @hostLastConnectedDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected {days}d ago'**
+  String hostLastConnectedDays(int days);
+
+  /// No description provided for @terminalReconnectTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect'**
+  String get terminalReconnectTooltip;
+
+  /// No description provided for @terminalNewSnippetTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'New snippet'**
+  String get terminalNewSnippetTooltip;
+
+  /// No description provided for @terminalCredentialDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Credential deleted'**
+  String get terminalCredentialDeleted;
+
+  /// No description provided for @terminalCredentialError.
+  ///
+  /// In en, this message translates to:
+  /// **'Credential error: {error}'**
+  String terminalCredentialError(String error);
+
+  /// No description provided for @terminalHostRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Host removed'**
+  String get terminalHostRemoved;
+
+  /// No description provided for @terminalHostError.
+  ///
+  /// In en, this message translates to:
+  /// **'Host not found: {error}'**
+  String terminalHostError(String error);
+
+  /// No description provided for @terminalConnectingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting to {host}...'**
+  String terminalConnectingMessage(String host);
+
+  /// No description provided for @terminalConnectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection failed: {error}'**
+  String terminalConnectionFailed(String error);
+}
+
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
+  const _AppLocalizationsDelegate();
+
+  @override
+  Future<AppLocalizations> load(Locale locale) {
+    return SynchronousFuture<AppLocalizations>(lookupAppLocalizations(locale));
+  }
+
+  @override
+  bool isSupported(Locale locale) =>
+      <String>['en', 'zh'].contains(locale.languageCode);
+
+  @override
+  bool shouldReload(_AppLocalizationsDelegate old) => false;
+}
+
+AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when only language code is specified.
+  switch (locale.languageCode) {
+    case 'en':
+      return AppLocalizationsEn();
+    case 'zh':
+      return AppLocalizationsZh();
+  }
+
+  throw FlutterError(
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
+}

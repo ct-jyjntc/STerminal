@@ -1,0 +1,401 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for English (`en`).
+class AppLocalizationsEn extends AppLocalizations {
+  AppLocalizationsEn([String locale = 'en']) : super(locale);
+
+  @override
+  String get appTitle => 'STerminal';
+
+  @override
+  String get commonCancel => 'Cancel';
+
+  @override
+  String get commonDelete => 'Delete';
+
+  @override
+  String get connectionsTitle => 'Connections';
+
+  @override
+  String get connectionsNewHost => 'New host';
+
+  @override
+  String get connectionsSearchHint => 'Search by host, tag or address';
+
+  @override
+  String get connectionsFavorites => 'Favorites';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get filterUngrouped => 'Ungrouped';
+
+  @override
+  String connectionsLoadError(String error) {
+    return 'Failed to load hosts: $error';
+  }
+
+  @override
+  String hostInspectorLoadError(String error) {
+    return 'Failed to load host: $error';
+  }
+
+  @override
+  String get hostInspectorEmpty => 'Select a host to inspect';
+
+  @override
+  String get hostCreateButton => 'Create host';
+
+  @override
+  String get hostConnect => 'Connect';
+
+  @override
+  String get hostEdit => 'Edit host';
+
+  @override
+  String get hostDeleteTooltip => 'Delete host';
+
+  @override
+  String get hostDeleteTitle => 'Delete host';
+
+  @override
+  String hostDeleteMessage(String name) {
+    return 'Are you sure you want to remove $name?';
+  }
+
+  @override
+  String get hostNoDescription => 'No description';
+
+  @override
+  String get hostNoTags => 'No tags';
+
+  @override
+  String get hostMissingCredential => 'Missing credential';
+
+  @override
+  String get hostInspectorEndpoint => 'Endpoint';
+
+  @override
+  String get hostInspectorCredential => 'Credential';
+
+  @override
+  String get hostInspectorTags => 'Tags';
+
+  @override
+  String get hostFormTitleNew => 'New host';
+
+  @override
+  String get hostFormTitleEdit => 'Edit host';
+
+  @override
+  String get hostFormDisplayName => 'Display name';
+
+  @override
+  String get hostFormHostLabel => 'Host / IP';
+
+  @override
+  String get hostFormPortLabel => 'Port';
+
+  @override
+  String get hostFormCredentialLabel => 'Credential';
+
+  @override
+  String get hostFormSelectCredential => 'Select credential';
+
+  @override
+  String get hostFormCreateCredential => 'Create credential';
+
+  @override
+  String get hostFormGroupLabel => 'Group';
+
+  @override
+  String get hostFormNoGroupOption => 'No group';
+
+  @override
+  String get hostFormDescriptionLabel => 'Description';
+
+  @override
+  String get hostFormTagsLabel => 'Tags (comma separated)';
+
+  @override
+  String get hostFormAccentLabel => 'Accent';
+
+  @override
+  String get hostFormFavoriteLabel => 'Favorite';
+
+  @override
+  String get hostFormSave => 'Save host';
+
+  @override
+  String get hostFormValidation => 'Name, host, and credential are required.';
+
+  @override
+  String get hostFormInlineToggle => 'Enter credential manually';
+
+  @override
+  String get hostFormInlineCancel => 'Use saved credential';
+
+  @override
+  String get hostFormCredentialInlineTitle => 'Credential details';
+
+  @override
+  String get hostFormCredentialInlineRequired =>
+      'Fill in complete credential information.';
+
+  @override
+  String get hostFormCredentialMissing =>
+      'Please select or create a credential first.';
+
+  @override
+  String get groupsTitle => 'Groups';
+
+  @override
+  String get groupsNew => 'New group';
+
+  @override
+  String get groupsNoDescription => 'No description';
+
+  @override
+  String groupsHostCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hosts',
+      one: '$count host',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupsDeleteTitle => 'Delete group';
+
+  @override
+  String get groupsDeleteMessage =>
+      'Hosts in this group will become ungrouped.';
+
+  @override
+  String get groupFormTitleNew => 'Add group';
+
+  @override
+  String get groupFormTitleEdit => 'Edit group';
+
+  @override
+  String get groupFormNameLabel => 'Group name';
+
+  @override
+  String get groupFormDescriptionLabel => 'Description';
+
+  @override
+  String get groupFormSave => 'Save group';
+
+  @override
+  String get groupFormValidation => 'Name is required.';
+
+  @override
+  String get snippetsTitle => 'Scripts';
+
+  @override
+  String get snippetsNew => 'New snippet';
+
+  @override
+  String get snippetsEmpty => 'No snippets yet';
+
+  @override
+  String get snippetsPanelHint => 'Create snippets to quick send';
+
+  @override
+  String get snippetsCopyMessage => 'Copied command';
+
+  @override
+  String get snippetsDeleteTitle => 'Delete snippet';
+
+  @override
+  String snippetsDeleteMessage(String title) {
+    return 'Are you sure you want to delete $title?';
+  }
+
+  @override
+  String get snippetFormTitleNew => 'New snippet';
+
+  @override
+  String get snippetFormTitleEdit => 'Edit snippet';
+
+  @override
+  String get snippetFormTitleLabel => 'Title';
+
+  @override
+  String get snippetFormCommandLabel => 'Command';
+
+  @override
+  String get snippetFormDescriptionLabel => 'Description';
+
+  @override
+  String get snippetFormTagsLabel => 'Tags';
+
+  @override
+  String get snippetFormSave => 'Save snippet';
+
+  @override
+  String get snippetFormValidation => 'Title and command are required.';
+
+  @override
+  String get vaultTitle => 'Credentials';
+
+  @override
+  String get vaultNew => 'New credential';
+
+  @override
+  String get vaultEmpty => 'No credentials yet';
+
+  @override
+  String get vaultDeleteTitle => 'Delete credential';
+
+  @override
+  String get vaultDeleteMessage =>
+      'Hosts referencing this credential will need to be updated manually.';
+
+  @override
+  String get credentialFormTitleNew => 'Add credential';
+
+  @override
+  String get credentialFormTitleEdit => 'Edit credential';
+
+  @override
+  String get credentialFormLabel => 'Label';
+
+  @override
+  String get credentialFormUsername => 'Username';
+
+  @override
+  String get credentialFormPassword => 'Password';
+
+  @override
+  String get credentialFormKeyPair => 'Key pair';
+
+  @override
+  String get credentialFormPrivateKey => 'Private key (PEM)';
+
+  @override
+  String get credentialFormPassphrase => 'Passphrase (optional)';
+
+  @override
+  String get credentialFormSave => 'Save credential';
+
+  @override
+  String get credentialFormValidation => 'Name and username are required.';
+
+  @override
+  String get credentialAuthPassword => 'Password';
+
+  @override
+  String get credentialAuthKeyPair => 'Key pair';
+
+  @override
+  String get credentialUnknownUser => 'unknown';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsThemeLight => 'Light';
+
+  @override
+  String get settingsThemeDark => 'Dark';
+
+  @override
+  String get settingsThemeSystem => 'System';
+
+  @override
+  String get settingsSync => 'Secure sync';
+
+  @override
+  String get settingsSyncSubtitle => 'Sync hosts and credentials';
+
+  @override
+  String get settingsBiometric => 'Biometric lock';
+
+  @override
+  String get settingsBiometricSubtitle => 'Require Touch ID / Face ID';
+
+  @override
+  String get settingsConfirm => 'Connection confirmation';
+
+  @override
+  String get settingsConfirmSubtitle => 'Prompt before opening remote session';
+
+  @override
+  String get settingsExport => 'Export data';
+
+  @override
+  String get settingsExportSubtitle =>
+      'Generate encrypted backup of local content';
+
+  @override
+  String get settingsExportComingSoon => 'Export coming soon.';
+
+  @override
+  String genericErrorMessage(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get hostLastConnectedNever => 'Never connected';
+
+  @override
+  String get hostLastConnectedJustNow => 'Connected just now';
+
+  @override
+  String hostLastConnectedMinutes(int minutes) {
+    return 'Connected ${minutes}m ago';
+  }
+
+  @override
+  String hostLastConnectedHours(int hours) {
+    return 'Connected ${hours}h ago';
+  }
+
+  @override
+  String hostLastConnectedDays(int days) {
+    return 'Connected ${days}d ago';
+  }
+
+  @override
+  String get terminalReconnectTooltip => 'Reconnect';
+
+  @override
+  String get terminalNewSnippetTooltip => 'New snippet';
+
+  @override
+  String get terminalCredentialDeleted => 'Credential deleted';
+
+  @override
+  String terminalCredentialError(String error) {
+    return 'Credential error: $error';
+  }
+
+  @override
+  String get terminalHostRemoved => 'Host removed';
+
+  @override
+  String terminalHostError(String error) {
+    return 'Host not found: $error';
+  }
+
+  @override
+  String terminalConnectingMessage(String host) {
+    return 'Connecting to $host...';
+  }
+
+  @override
+  String terminalConnectionFailed(String error) {
+    return 'Connection failed: $error';
+  }
+}

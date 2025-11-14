@@ -7,6 +7,7 @@ import '../../../core/app_providers.dart';
 import '../../../domain/models/snippet.dart';
 import '../application/snippet_providers.dart';
 import 'snippet_form_sheet.dart';
+import '../../../widgets/list_item_card.dart';
 
 class SnippetsPage extends ConsumerWidget {
   const SnippetsPage({super.key});
@@ -123,83 +124,25 @@ class _SnippetRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = Theme.of(context).colorScheme.primary;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha((0.02 * 255).round()),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: accent.withAlpha((0.12 * 255).round()),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              snippet.title.characters.first.toUpperCase(),
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(color: accent, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  snippet.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w600),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      snippet.command,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontFamily: 'monospace'),
-                    ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                onPressed: onCopy,
-                icon: const Icon(Icons.copy_all_outlined),
-              ),
-              IconButton(
-                onPressed: onEdit,
-                icon: const Icon(Icons.edit_outlined),
-              ),
-              IconButton(
-                onPressed: onDelete,
-                icon: const Icon(Icons.delete_outline),
-              ),
-            ],
-          ),
-        ],
-      ),
+    return ListItemCard(
+      leading: snippet.title.characters.first.toUpperCase(),
+      accentColor: accent,
+      title: snippet.title,
+      subtitle: snippet.command,
+      actions: [
+        IconButton(
+          onPressed: onCopy,
+          icon: const Icon(Icons.copy_all_outlined),
+        ),
+        IconButton(
+          onPressed: onEdit,
+          icon: const Icon(Icons.edit_outlined),
+        ),
+        IconButton(
+          onPressed: onDelete,
+          icon: const Icon(Icons.delete_outline),
+        ),
+      ],
     );
   }
 }

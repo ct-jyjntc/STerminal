@@ -6,6 +6,7 @@ import '../../../core/app_providers.dart';
 import '../../../domain/models/credential.dart';
 import '../application/credential_providers.dart';
 import 'credential_form_sheet.dart';
+import '../../../widgets/list_item_card.dart';
 
 class VaultPage extends ConsumerWidget {
   const VaultPage({super.key});
@@ -52,31 +53,28 @@ class VaultPage extends ConsumerWidget {
                             credential.authKind == CredentialAuthKind.password
                                 ? l10n.credentialAuthPassword
                                 : l10n.credentialAuthKeyPair;
-                        return Card(
-                          child: ListTile(
-                            title: Text(credential.name),
-                            subtitle: Text(
-                              '${credential.username} • $authLabel',
+                        return ListItemCard(
+                          leading: credential.name.characters.first.toUpperCase(),
+                          accentColor: Theme.of(context).colorScheme.primary,
+                          title: credential.name,
+                          subtitle: '${credential.username} • $authLabel',
+                          onTap: () =>
+                              showCredentialFormSheet(context, credential: credential),
+                          actions: [
+                            IconButton(
+                              onPressed: () =>
+                                  showCredentialFormSheet(context, credential: credential),
+                              icon: const Icon(Icons.edit_outlined),
                             ),
-                            trailing: Wrap(
-                              spacing: 8,
-                              children: [
-                                IconButton(
-                                  onPressed: () =>
-                                      showCredentialFormSheet(context, credential: credential),
-                                  icon: const Icon(Icons.edit_outlined),
-                                ),
-                                IconButton(
-                                  onPressed: () =>
-                                      _deleteCredential(context, ref, credential.id),
-                                  icon: const Icon(Icons.delete_outline),
-                                ),
-                              ],
+                            IconButton(
+                              onPressed: () =>
+                                  _deleteCredential(context, ref, credential.id),
+                              icon: const Icon(Icons.delete_outline),
                             ),
-                          ),
+                          ],
                         );
                       },
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
                       itemCount: items.length,
                     );
                   },

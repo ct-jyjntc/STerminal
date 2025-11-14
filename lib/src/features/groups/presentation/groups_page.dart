@@ -7,6 +7,7 @@ import '../../../utils/color_utils.dart';
 import '../../connections/application/hosts_providers.dart';
 import '../application/group_providers.dart';
 import 'group_form_sheet.dart';
+import '../../../widgets/list_item_card.dart';
 
 class GroupsPage extends ConsumerWidget {
   const GroupsPage({super.key});
@@ -58,37 +59,30 @@ class GroupsPage extends ConsumerWidget {
                       itemBuilder: (context, index) {
                         final group = groupItems[index];
                         final count = hostCounts[group.id] ?? 0;
-                        return ListTile(
-                          tileColor: Theme.of(context).cardColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          leading: CircleAvatar(
-                            backgroundColor: parseColor(group.colorHex),
-                            child: Text(
-                              group.name.characters.first.toUpperCase(),
+                        final description =
+                            group.description?.trim().isNotEmpty == true
+                                ? group.description!
+                                : l10n.groupsNoDescription;
+                        final subtitle =
+                            '${l10n.groupsHostCount(count)} • $description';
+                        return ListItemCard(
+                          leading: group.name.characters.first.toUpperCase(),
+                          accentColor: parseColor(group.colorHex),
+                          title: group.name,
+                          subtitle: subtitle,
+                          onTap: () => showGroupFormSheet(context, group: group),
+                          actions: [
+                            IconButton(
+                              onPressed: () =>
+                                  showGroupFormSheet(context, group: group),
+                              icon: const Icon(Icons.edit_outlined),
                             ),
-                          ),
-                          title: Text(group.name),
-                          subtitle:
-                              Text(group.description ?? l10n.groupsNoDescription),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(l10n.groupsHostCount(count)),
-                              IconButton(
-                                onPressed: () => showGroupFormSheet(
-                                  context,
-                                  group: group,
-                                ),
-                                icon: const Icon(Icons.edit_outlined),
-                              ),
-                              IconButton(
-                                onPressed: () => _deleteGroup(context, ref, group.id),
-                                icon: const Icon(Icons.delete_outline),
-                              ),
-                            ],
-                          ),
+                            IconButton(
+                              onPressed: () =>
+                                  _deleteGroup(context, ref, group.id),
+                              icon: const Icon(Icons.delete_outline),
+                            ),
+                          ],
                         );
                       },
                     );

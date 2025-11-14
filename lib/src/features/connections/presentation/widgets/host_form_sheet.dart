@@ -184,22 +184,18 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
                       Row(
                         children: [
                           Expanded(
-                            child: InputDecorator(
+                            child: DropdownButtonFormField<String?>(
+                              initialValue: _selectedCredential,
                               decoration: InputDecoration(
                                 labelText: l10n.hostFormCredentialLabel,
                               ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String?>(
-                                  value: _selectedCredential,
-                                  isExpanded: true,
-                                  items: dropdownItems,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _selectedCredential = value;
-                                    });
-                                  },
-                                ),
-                              ),
+                              isExpanded: true,
+                              items: dropdownItems,
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedCredential = value;
+                                });
+                              },
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -275,21 +271,17 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
                       child: Text(group.name),
                     ),
                 ];
-                return InputDecorator(
+                return DropdownButtonFormField<String?>(
+                  initialValue: _selectedGroup,
                   decoration:
                       InputDecoration(labelText: l10n.hostFormGroupLabel),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String?>(
-                      value: _selectedGroup,
-                      isExpanded: true,
-                      items: dropdownItems,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedGroup = value;
-                        });
-                      },
-                    ),
-                  ),
+                  isExpanded: true,
+                  items: dropdownItems,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedGroup = value;
+                    });
+                  },
                 );
               },
               loading: () => const LinearProgressIndicator(),

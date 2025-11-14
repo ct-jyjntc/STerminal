@@ -13,6 +13,7 @@ class HostCard extends StatelessWidget {
     required this.onTap,
     required this.onConnectRequested,
     required this.onEditRequested,
+    required this.onDeleteRequested,
     required this.subtitle,
   });
 
@@ -21,6 +22,7 @@ class HostCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onConnectRequested;
   final VoidCallback onEditRequested;
+  final VoidCallback onDeleteRequested;
   final String subtitle;
 
   @override
@@ -35,14 +37,19 @@ class HostCard extends StatelessWidget {
       selected: selected,
       actions: [
         IconButton(
+          tooltip: context.l10n.hostConnect,
+          onPressed: onConnectRequested,
+          icon: const Icon(Icons.play_arrow_rounded),
+        ),
+        IconButton(
           tooltip: context.l10n.hostEdit,
           onPressed: onEditRequested,
           icon: const Icon(Icons.edit_outlined),
         ),
         IconButton(
-          tooltip: context.l10n.hostConnect,
-          onPressed: onConnectRequested,
-          icon: const Icon(Icons.play_arrow_rounded),
+          tooltip: context.l10n.hostDeleteTooltip,
+          onPressed: onDeleteRequested,
+          icon: const Icon(Icons.delete_outline),
         ),
       ],
     );

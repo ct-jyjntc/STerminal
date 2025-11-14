@@ -49,7 +49,7 @@ class SnippetsPage extends ConsumerWidget {
                     }
                     return ListView.separated(
                       itemCount: snippetItems.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final snippet = snippetItems[index];
                         return _SnippetRow(

@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sterminal/src/l10n/l10n.dart';
 
+import '../../../core/app_providers.dart';
 import '../../../domain/models/group.dart';
+import '../../../domain/models/host.dart';
 import '../../../routing/app_route.dart';
 import '../../groups/application/group_providers.dart';
 import '../../vault/application/credential_providers.dart';
@@ -76,6 +78,8 @@ class ConnectionsPage extends ConsumerWidget {
                             context,
                             host: host,
                           ),
+                          onDeleteRequested: () =>
+                              _confirmDeleteHost(context, ref, host),
                           subtitle: subtitle,
                         );
                       },
@@ -88,6 +92,39 @@ class ConnectionsPage extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmDeleteHost(
+    BuildContext context,
+    WidgetRef ref,
+    Host host,
+  ) async {
+    final l10n = context.l10n;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.hostDeleteTitle),
+        content: Text(l10n.hostDeleteMessage(host.name)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.commonDelete),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      final repo = ref.read(hostsRepositoryProvider);
+      await repo.remove(host.id);
+      final selectedNotifier = ref.read(selectedHostProvider.notifier);
+      if (selectedNotifier.state == host.id) {
+        selectedNotifier.state = null;
+      }
+    }
   }
 }
 

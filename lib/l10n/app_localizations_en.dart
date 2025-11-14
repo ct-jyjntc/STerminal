@@ -27,9 +27,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get connectionsSearchHint => 'Search by host, tag or address';
 
   @override
-  String get connectionsFavorites => 'Favorites';
-
-  @override
   String get filterAll => 'All';
 
   @override
@@ -55,7 +52,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hostConnect => 'Connect';
 
   @override
-  String get hostEdit => 'Edit host';
+  String get hostEdit => 'Edit';
 
   @override
   String get hostDeleteTooltip => 'Delete host';
@@ -118,9 +115,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hostFormAccentLabel => 'Accent';
-
-  @override
-  String get hostFormFavoriteLabel => 'Favorite';
 
   @override
   String get hostFormSave => 'Save host';

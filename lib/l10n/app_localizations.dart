@@ -134,12 +134,6 @@ abstract class AppLocalizations {
   /// **'Search by host, tag or address'**
   String get connectionsSearchHint;
 
-  /// No description provided for @connectionsFavorites.
-  ///
-  /// In en, this message translates to:
-  /// **'Favorites'**
-  String get connectionsFavorites;
-
   /// No description provided for @filterAll.
   ///
   /// In en, this message translates to:
@@ -185,7 +179,7 @@ abstract class AppLocalizations {
   /// No description provided for @hostEdit.
   ///
   /// In en, this message translates to:
-  /// **'Edit host'**
+  /// **'Edit'**
   String get hostEdit;
 
   /// No description provided for @hostDeleteTooltip.
@@ -307,12 +301,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Accent'**
   String get hostFormAccentLabel;
-
-  /// No description provided for @hostFormFavoriteLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Favorite'**
-  String get hostFormFavoriteLabel;
 
   /// No description provided for @hostFormSave.
   ///

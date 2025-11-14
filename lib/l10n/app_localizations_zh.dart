@@ -27,9 +27,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get connectionsSearchHint => '按主机、标签或地址搜索';
 
   @override
-  String get connectionsFavorites => '收藏';
-
-  @override
   String get filterAll => '全部';
 
   @override
@@ -55,7 +52,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hostConnect => '连接';
 
   @override
-  String get hostEdit => '编辑主机';
+  String get hostEdit => '编辑';
 
   @override
   String get hostDeleteTooltip => '删除主机';
@@ -118,9 +115,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get hostFormAccentLabel => '颜色';
-
-  @override
-  String get hostFormFavoriteLabel => '收藏';
 
   @override
   String get hostFormSave => '保存主机';

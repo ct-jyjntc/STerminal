@@ -11,15 +11,12 @@ final hostSearchQueryProvider = StateProvider<String>((ref) => '');
 
 final hostGroupFilterProvider = StateProvider<String?>((ref) => null);
 
-final favoritesOnlyProvider = StateProvider<bool>((ref) => false);
-
 final selectedHostProvider = StateProvider<String?>((ref) => null);
 
 final filteredHostsProvider = Provider<AsyncValue<List<Host>>>((ref) {
   final hosts = ref.watch(hostsStreamProvider);
   final query = ref.watch(hostSearchQueryProvider).trim().toLowerCase();
   final groupFilter = ref.watch(hostGroupFilterProvider);
-  final favoritesOnly = ref.watch(favoritesOnlyProvider);
 
   return hosts.whenData((items) {
     return items
@@ -31,8 +28,7 @@ final filteredHostsProvider = Provider<AsyncValue<List<Host>>>((ref) {
           final matchesGroup = groupFilter == null ||
               groupFilter == host.groupId ||
               (groupFilter == 'ungrouped' && host.groupId == null);
-          final matchesFavorite = !favoritesOnly || host.favorite;
-          return matchesQuery && matchesGroup && matchesFavorite;
+          return matchesQuery && matchesGroup;
         })
         .toList(growable: false);
   });

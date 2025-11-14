@@ -93,7 +93,6 @@ final bootstrapProvider = FutureProvider<void>((ref) async {
         credentialId: defaultCredentialId,
         groupId: groupsRepo.snapshot.first.id,
         colorHex: '#4DD0E1',
-        favorite: true,
         tags: const ['demo', 'linux'],
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),

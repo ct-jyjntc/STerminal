@@ -9,7 +9,6 @@ class Host implements Identifiable {
     required this.credentialId,
     required this.groupId,
     required this.colorHex,
-    required this.favorite,
     required this.tags,
     required this.createdAt,
     required this.updatedAt,
@@ -25,7 +24,6 @@ class Host implements Identifiable {
   final String credentialId;
   final String? groupId;
   final String colorHex;
-  final bool favorite;
   final List<String> tags;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -40,7 +38,6 @@ class Host implements Identifiable {
     String? credentialId,
     String? groupId,
     String? colorHex,
-    bool? favorite,
     List<String>? tags,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -55,7 +52,6 @@ class Host implements Identifiable {
       credentialId: credentialId ?? this.credentialId,
       groupId: groupId ?? this.groupId,
       colorHex: colorHex ?? this.colorHex,
-      favorite: favorite ?? this.favorite,
       tags: tags ?? this.tags,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -73,7 +69,6 @@ class Host implements Identifiable {
       credentialId: json['credentialId'] as String,
       groupId: json['groupId'] as String?,
       colorHex: json['colorHex'] as String? ?? '#4DD0E1',
-      favorite: json['favorite'] as bool? ?? false,
       tags: (json['tags'] as List<dynamic>? ?? const [])
           .map((e) => e as String)
           .toList(),
@@ -96,7 +91,6 @@ class Host implements Identifiable {
         'credentialId': credentialId,
         'groupId': groupId,
         'colorHex': colorHex,
-        'favorite': favorite,
         'tags': tags,
         'createdAt': createdAt.toIso8601String(),
         'updatedAt': updatedAt.toIso8601String(),

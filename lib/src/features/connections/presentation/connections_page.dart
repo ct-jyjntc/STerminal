@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sterminal/src/l10n/l10n.dart';
 
-import '../../../core/app_providers.dart';
 import '../../../domain/models/group.dart';
 import '../../../routing/app_route.dart';
 import '../../groups/application/group_providers.dart';
@@ -58,29 +57,19 @@ class ConnectionsPage extends ConsumerWidget {
                         final credential = credentialMap[host.credentialId];
                         final subtitle =
                             '${credential?.username ?? l10n.credentialUnknownUser} @ ${host.address}:${host.port}';
-                        final lastConnection =
-                            _formatLastConnected(context, host.lastConnectedAt);
                         final selectedHost = ref.watch(selectedHostProvider);
                         return HostCard(
                           host: host,
                           selected: selectedHost == host.id,
-                          onTap: () => ref
-                              .read(selectedHostProvider.notifier)
-                              .state = host.id,
+                          onTap: () =>
+                              ref.read(selectedHostProvider.notifier).state =
+                                  host.id,
                           onConnectRequested: () {
-                            ref.read(selectedHostProvider.notifier).state = host.id;
+                            ref.read(selectedHostProvider.notifier).state =
+                                host.id;
                             context.pushNamed(
                               AppRoute.terminal.name,
                               pathParameters: {'hostId': host.id},
-                            );
-                          },
-                          onFavoriteToggle: () async {
-                            final repo = ref.read(hostsRepositoryProvider);
-                            await repo.upsert(
-                              host.copyWith(
-                                favorite: !host.favorite,
-                                updatedAt: DateTime.now(),
-                              ),
                             );
                           },
                           onEditRequested: () => showHostFormSheet(
@@ -88,7 +77,6 @@ class ConnectionsPage extends ConsumerWidget {
                             host: host,
                           ),
                           subtitle: subtitle,
-                          lastConnectionLabel: lastConnection,
                         );
                       },
                     );
@@ -100,20 +88,6 @@ class ConnectionsPage extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  String _formatLastConnected(BuildContext context, DateTime? value) {
-    final l10n = context.l10n;
-    if (value == null) return l10n.hostLastConnectedNever;
-    final difference = DateTime.now().difference(value);
-    if (difference.inMinutes < 1) return l10n.hostLastConnectedJustNow;
-    if (difference.inHours < 1) {
-      return l10n.hostLastConnectedMinutes(difference.inMinutes);
-    }
-    if (difference.inDays < 1) {
-      return l10n.hostLastConnectedHours(difference.inHours);
-    }
-    return l10n.hostLastConnectedDays(difference.inDays);
   }
 }
 
@@ -170,14 +144,6 @@ class _ToolbarState extends ConsumerState<_Toolbar> {
                 onChanged: (value) =>
                     ref.read(hostSearchQueryProvider.notifier).state = value,
               ),
-            ),
-            const SizedBox(width: 16),
-            FilterChip(
-              label: Text(l10n.connectionsFavorites),
-              selected: ref.watch(favoritesOnlyProvider),
-              onSelected: (value) => ref
-                  .read(favoritesOnlyProvider.notifier)
-                  .state = value,
             ),
           ],
         ),

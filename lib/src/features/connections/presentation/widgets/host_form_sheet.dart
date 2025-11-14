@@ -48,7 +48,6 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
   late final TextEditingController _credentialPassphraseController;
   String? _selectedGroup;
   String? _selectedCredential;
-  late bool _isFavorite;
   late String _colorHex;
   bool _isSaving = false;
   bool _createCredentialInline = false;
@@ -78,7 +77,6 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
     _credentialPassphraseController = TextEditingController();
     _selectedGroup = host?.groupId;
     _selectedCredential = host?.credentialId;
-    _isFavorite = host?.favorite ?? false;
     _colorHex = host?.colorHex ?? _colorOptions.first;
   }
 
@@ -298,7 +296,6 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
               error: (error, _) => Text(l10n.genericErrorMessage('$error')),
             ),
             const SizedBox(height: 16),
-            const SizedBox(height: 16),
             Row(
               children: [
                 Text(l10n.hostFormAccentLabel),
@@ -325,20 +322,6 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
                           ),
                         ),
                       ),
-                  ],
-                ),
-                const Spacer(),
-                Row(
-                  children: [
-                    Text(l10n.hostFormFavoriteLabel),
-                    Switch(
-                      value: _isFavorite,
-                      onChanged: (value) {
-                        setState(() {
-                          _isFavorite = value;
-                        });
-                      },
-                    ),
                   ],
                 ),
               ],
@@ -431,7 +414,6 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
           credentialId: credentialId,
           groupId: _selectedGroup,
           colorHex: _colorHex,
-          favorite: _isFavorite,
           updatedAt: now,
         ) ??
         Host(
@@ -442,7 +424,6 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
           credentialId: credentialId,
           groupId: _selectedGroup,
           colorHex: _colorHex,
-          favorite: _isFavorite,
           tags: const [],
           createdAt: now,
           updatedAt: now,

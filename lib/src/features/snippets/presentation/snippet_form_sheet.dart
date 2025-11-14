@@ -31,8 +31,6 @@ class SnippetFormSheet extends ConsumerStatefulWidget {
 class _SnippetFormSheetState extends ConsumerState<SnippetFormSheet> {
   late final TextEditingController _titleController;
   late final TextEditingController _commandController;
-  late final TextEditingController _descriptionController;
-  late final TextEditingController _tagsController;
 
   @override
   void initState() {
@@ -40,19 +38,12 @@ class _SnippetFormSheetState extends ConsumerState<SnippetFormSheet> {
     final snippet = widget.snippet;
     _titleController = TextEditingController(text: snippet?.title);
     _commandController = TextEditingController(text: snippet?.command);
-    _descriptionController =
-        TextEditingController(text: snippet?.description ?? '');
-    _tagsController = TextEditingController(
-      text: snippet == null ? '' : snippet.tags.join(', '),
-    );
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _commandController.dispose();
-    _descriptionController.dispose();
-    _tagsController.dispose();
     super.dispose();
   }
 
@@ -93,18 +84,6 @@ class _SnippetFormSheetState extends ConsumerState<SnippetFormSheet> {
               decoration:
                   InputDecoration(labelText: l10n.snippetFormCommandLabel),
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _descriptionController,
-              decoration:
-                  InputDecoration(labelText: l10n.snippetFormDescriptionLabel),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _tagsController,
-              decoration:
-                  InputDecoration(labelText: l10n.snippetFormTagsLabel),
-            ),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
@@ -132,27 +111,11 @@ class _SnippetFormSheetState extends ConsumerState<SnippetFormSheet> {
     final snippet = widget.snippet?.copyWith(
           title: _titleController.text.trim(),
           command: _commandController.text,
-          description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
-          tags: _tagsController.text
-              .split(',')
-              .map((e) => e.trim())
-              .where((e) => e.isNotEmpty)
-              .toList(),
         ) ??
         Snippet(
           id: uuid.v4(),
           title: _titleController.text.trim(),
           command: _commandController.text,
-          description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
-          tags: _tagsController.text
-              .split(',')
-              .map((e) => e.trim())
-              .where((e) => e.isNotEmpty)
-              .toList(),
         );
     await repo.upsert(snippet);
     if (!mounted) return;

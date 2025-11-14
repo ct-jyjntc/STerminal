@@ -12,6 +12,7 @@ class HostCard extends StatelessWidget {
     required this.onTap,
     required this.onConnectRequested,
     required this.onFavoriteToggle,
+    required this.onEditRequested,
     required this.subtitle,
     required this.lastConnectionLabel,
   });
@@ -21,6 +22,7 @@ class HostCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onConnectRequested;
   final VoidCallback onFavoriteToggle;
+  final VoidCallback onEditRequested;
   final String subtitle;
   final String lastConnectionLabel;
 
@@ -114,32 +116,6 @@ class HostCard extends StatelessWidget {
                           color: textColor?.withAlpha((0.65 * 255).round()),
                         ),
                   ),
-                  if (host.tags.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
-                        children: [
-                          for (final tag in host.tags.take(3))
-                            Chip(
-                              label: Text(tag),
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 0,
-                              ),
-                            ),
-                          if (host.tags.length > 3)
-                            Chip(
-                              label: Text('+${host.tags.length - 3}'),
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 6),
-                            ),
-                        ],
-                      ),
-                    ),
                   const SizedBox(height: 4),
                   Text(
                     lastConnectionLabel,
@@ -160,6 +136,17 @@ class HostCard extends StatelessWidget {
               onPressed: onConnectRequested,
               icon: const Icon(Icons.play_arrow_rounded, size: 18),
               label: Text(context.l10n.hostConnect),
+            ),
+            const SizedBox(width: 8),
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                minimumSize: const Size(0, 0),
+              ),
+              onPressed: onEditRequested,
+              icon: const Icon(Icons.edit_outlined, size: 18),
+              label: Text(context.l10n.hostEdit),
             ),
           ],
         ),

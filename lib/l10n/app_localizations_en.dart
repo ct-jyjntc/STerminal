@@ -117,12 +117,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hostFormNoGroupOption => 'No group';
 
   @override
-  String get hostFormDescriptionLabel => 'Description';
-
-  @override
-  String get hostFormTagsLabel => 'Tags (comma separated)';
-
-  @override
   String get hostFormAccentLabel => 'Accent';
 
   @override
@@ -223,19 +217,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get snippetFormTitleNew => 'New snippet';
 
   @override
-  String get snippetFormTitleEdit => 'Edit snippet';
+  String get snippetFormTitleEdit => 'Edit script';
 
   @override
   String get snippetFormTitleLabel => 'Title';
 
   @override
   String get snippetFormCommandLabel => 'Command';
-
-  @override
-  String get snippetFormDescriptionLabel => 'Description';
-
-  @override
-  String get snippetFormTagsLabel => 'Tags';
 
   @override
   String get snippetFormSave => 'Save snippet';

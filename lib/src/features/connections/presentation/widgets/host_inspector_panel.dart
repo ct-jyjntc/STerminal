@@ -64,11 +64,6 @@ class HostInspectorPanel extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  host.description ?? context.l10n.hostNoDescription,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
                 const SizedBox(height: 16),
                 credentialAsync.when(
                   loading: () => const LinearProgressIndicator(),
@@ -87,13 +82,6 @@ class HostInspectorPanel extends ConsumerWidget {
                           credential == null
                               ? context.l10n.hostMissingCredential
                               : '${credential.name} (${credential.username})',
-                        ),
-                        const SizedBox(height: 8),
-                        _InfoRow(
-                          context.l10n.hostInspectorTags,
-                          host.tags.isEmpty
-                              ? context.l10n.hostNoTags
-                              : host.tags.join(', '),
                         ),
                       ],
                     );

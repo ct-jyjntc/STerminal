@@ -122,7 +122,6 @@ class _SnippetRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = Theme.of(context).colorScheme.primary;
-    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
 
     return Container(
       decoration: BoxDecoration(
@@ -169,45 +168,15 @@ class _SnippetRow extends StatelessWidget {
                       .titleMedium
                       ?.copyWith(fontWeight: FontWeight.w600),
                 ),
-                if (snippet.description != null && snippet.description!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: Text(
-                      snippet.description!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: textColor?.withAlpha((0.7 * 255).round())),
-                    ),
-                  ),
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    snippet.command,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontFamily: 'monospace'),
-                  ),
-                ),
-                if (snippet.tags.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Wrap(
-                      spacing: 6,
-                      children: [
-                        for (final tag in snippet.tags.take(4))
-                          Chip(
-                            label: Text(tag),
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                          ),
-                        if (snippet.tags.length > 4)
-                          Chip(label: Text('+${snippet.tags.length - 4}')),
-                      ],
+                    child: Text(
+                      snippet.command,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontFamily: 'monospace'),
                     ),
-                  ),
+                ),
               ],
             ),
           ),

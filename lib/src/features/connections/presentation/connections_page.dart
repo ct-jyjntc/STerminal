@@ -11,7 +11,6 @@ import '../../vault/application/credential_providers.dart';
 import '../application/hosts_providers.dart';
 import 'widgets/host_card.dart';
 import 'widgets/host_form_sheet.dart';
-import 'widgets/host_inspector_panel.dart';
 
 class ConnectionsPage extends ConsumerWidget {
   const ConnectionsPage({super.key});
@@ -51,101 +50,47 @@ class ConnectionsPage extends ConsumerWidget {
                       for (final credential in credentials.value ?? [])
                         credential.id: credential,
                     };
-                    return Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: ListView.separated(
-                            itemCount: hostItems.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 12),
-                            itemBuilder: (context, index) {
-                              final host = hostItems[index];
-                              final credential =
-                                  credentialMap[host.credentialId];
-                              final subtitle =
-                                  '${credential?.username ?? l10n.credentialUnknownUser} @ ${host.address}:${host.port}';
-                              final lastConnection =
-                                  _formatLastConnected(context, host.lastConnectedAt);
-                              final selectedHost =
-                                  ref.watch(selectedHostProvider);
-                              return HostCard(
-                                host: host,
-                                selected: selectedHost == host.id,
-                                onTap: () => ref
-                                    .read(selectedHostProvider.notifier)
-                                    .state = host.id,
-                                onConnectRequested: () {
-                                  ref
-                                      .read(selectedHostProvider.notifier)
-                                      .state = host.id;
-                                  context.pushNamed(
-                                    AppRoute.terminal.name,
-                                    pathParameters: {'hostId': host.id},
-                                  );
-                                },
-                                onFavoriteToggle: () async {
-                                  final repo =
-                                      ref.read(hostsRepositoryProvider);
-                                  await repo.upsert(
-                                    host.copyWith(
-                                      favorite: !host.favorite,
-                                      updatedAt: DateTime.now(),
-                                    ),
-                                  );
-                                },
-                                subtitle: subtitle,
-                                lastConnectionLabel: lastConnection,
-                              );
-                            },
+                    return ListView.separated(
+                      itemCount: hostItems.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final host = hostItems[index];
+                        final credential = credentialMap[host.credentialId];
+                        final subtitle =
+                            '${credential?.username ?? l10n.credentialUnknownUser} @ ${host.address}:${host.port}';
+                        final lastConnection =
+                            _formatLastConnected(context, host.lastConnectedAt);
+                        final selectedHost = ref.watch(selectedHostProvider);
+                        return HostCard(
+                          host: host,
+                          selected: selectedHost == host.id,
+                          onTap: () => ref
+                              .read(selectedHostProvider.notifier)
+                              .state = host.id,
+                          onConnectRequested: () {
+                            ref.read(selectedHostProvider.notifier).state = host.id;
+                            context.pushNamed(
+                              AppRoute.terminal.name,
+                              pathParameters: {'hostId': host.id},
+                            );
+                          },
+                          onFavoriteToggle: () async {
+                            final repo = ref.read(hostsRepositoryProvider);
+                            await repo.upsert(
+                              host.copyWith(
+                                favorite: !host.favorite,
+                                updatedAt: DateTime.now(),
+                              ),
+                            );
+                          },
+                          onEditRequested: () => showHostFormSheet(
+                            context,
+                            host: host,
                           ),
-                        ),
-                        const SizedBox(width: 24),
-                        Flexible(
-                          child: HostInspectorPanel(
-                            onConnect: (host) {
-                              context.pushNamed(
-                                AppRoute.terminal.name,
-                                pathParameters: {'hostId': host.id},
-                              );
-                            },
-                            onEdit: (host) => showHostFormSheet(
-                              context,
-                              host: host,
-                            ),
-                            onDelete: (host) async {
-                              final confirm = await showDialog<bool>(
-                                context: context,
-                                builder: (context) {
-                                  final dialogL10n = context.l10n;
-                                  return AlertDialog(
-                                    title: Text(dialogL10n.hostDeleteTitle),
-                                    content: Text(
-                                      dialogL10n.hostDeleteMessage(host.name),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: Text(dialogL10n.commonCancel),
-                                      ),
-                                      FilledButton(
-                                        onPressed: () =>
-                                            Navigator.pop(context, true),
-                                        child: Text(dialogL10n.commonDelete),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                              if (confirm == true) {
-                                await ref
-                                    .read(hostsRepositoryProvider)
-                                    .remove(host.id);
-                              }
-                            },
-                            onCreate: () => showHostFormSheet(context),
-                          ),
-                        ),
-                      ],
+                          subtitle: subtitle,
+                          lastConnectionLabel: lastConnection,
+                        );
+                      },
                     );
                   },
                 ),

@@ -117,12 +117,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hostFormNoGroupOption => '无分组';
 
   @override
-  String get hostFormDescriptionLabel => '描述';
-
-  @override
-  String get hostFormTagsLabel => '标签（以逗号分隔）';
-
-  @override
   String get hostFormAccentLabel => '颜色';
 
   @override
@@ -219,19 +213,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get snippetFormTitleNew => '新建片段';
 
   @override
-  String get snippetFormTitleEdit => '编辑片段';
+  String get snippetFormTitleEdit => '编辑脚本';
 
   @override
   String get snippetFormTitleLabel => '标题';
 
   @override
   String get snippetFormCommandLabel => '命令';
-
-  @override
-  String get snippetFormDescriptionLabel => '描述';
-
-  @override
-  String get snippetFormTagsLabel => '标签';
 
   @override
   String get snippetFormSave => '保存片段';

@@ -41,8 +41,6 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
   late final TextEditingController _nameController;
   late final TextEditingController _addressController;
   late final TextEditingController _portController;
-  late final TextEditingController _descriptionController;
-  late final TextEditingController _tagsController;
   late final TextEditingController _credentialNameController;
   late final TextEditingController _credentialUsernameController;
   late final TextEditingController _credentialPasswordController;
@@ -73,10 +71,6 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
     _addressController = TextEditingController(text: host?.address);
     _portController =
         TextEditingController(text: (host?.port ?? 22).toString());
-    _descriptionController = TextEditingController(text: host?.description);
-    _tagsController = TextEditingController(
-      text: host == null ? '' : host.tags.join(', '),
-    );
     _credentialNameController = TextEditingController();
     _credentialUsernameController = TextEditingController();
     _credentialPasswordController = TextEditingController();
@@ -93,8 +87,6 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
     _nameController.dispose();
     _addressController.dispose();
     _portController.dispose();
-    _descriptionController.dispose();
-    _tagsController.dispose();
     _credentialNameController.dispose();
     _credentialUsernameController.dispose();
     _credentialPasswordController.dispose();
@@ -306,21 +298,6 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
               error: (error, _) => Text(l10n.genericErrorMessage('$error')),
             ),
             const SizedBox(height: 16),
-            TextField(
-              controller: _descriptionController,
-              minLines: 2,
-              maxLines: 3,
-              decoration: InputDecoration(
-                labelText: l10n.hostFormDescriptionLabel,
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _tagsController,
-              decoration: InputDecoration(
-                labelText: l10n.hostFormTagsLabel,
-              ),
-            ),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -441,11 +418,6 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
     }
     final port = int.tryParse(_portController.text) ?? 22;
     final now = DateTime.now();
-    final tags = _tagsController.text
-        .split(',')
-        .map((e) => e.trim())
-        .where((element) => element.isNotEmpty)
-        .toList();
     setState(() {
       _isSaving = true;
     });
@@ -460,10 +432,6 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
           groupId: _selectedGroup,
           colorHex: _colorHex,
           favorite: _isFavorite,
-          tags: tags,
-          description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
           updatedAt: now,
         ) ??
         Host(
@@ -475,12 +443,10 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
           groupId: _selectedGroup,
           colorHex: _colorHex,
           favorite: _isFavorite,
-          tags: tags,
+          tags: const [],
           createdAt: now,
           updatedAt: now,
-          description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
+          description: null,
         );
     await repo.upsert(updatedHost);
     if (!mounted) return;

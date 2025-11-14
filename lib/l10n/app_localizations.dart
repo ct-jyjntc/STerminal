@@ -302,18 +302,6 @@ abstract class AppLocalizations {
   /// **'No group'**
   String get hostFormNoGroupOption;
 
-  /// No description provided for @hostFormDescriptionLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Description'**
-  String get hostFormDescriptionLabel;
-
-  /// No description provided for @hostFormTagsLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Tags (comma separated)'**
-  String get hostFormTagsLabel;
-
   /// No description provided for @hostFormAccentLabel.
   ///
   /// In en, this message translates to:
@@ -491,7 +479,7 @@ abstract class AppLocalizations {
   /// No description provided for @snippetFormTitleEdit.
   ///
   /// In en, this message translates to:
-  /// **'Edit snippet'**
+  /// **'Edit script'**
   String get snippetFormTitleEdit;
 
   /// No description provided for @snippetFormTitleLabel.
@@ -505,18 +493,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Command'**
   String get snippetFormCommandLabel;
-
-  /// No description provided for @snippetFormDescriptionLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Description'**
-  String get snippetFormDescriptionLabel;
-
-  /// No description provided for @snippetFormTagsLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Tags'**
-  String get snippetFormTagsLabel;
 
   /// No description provided for @snippetFormSave.
   ///

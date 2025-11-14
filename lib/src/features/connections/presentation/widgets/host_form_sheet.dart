@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sterminal/src/l10n/l10n.dart';
 
 import '../../../../core/app_providers.dart';
-import '../../../../domain/models/credential.dart';
 import '../../../../domain/models/host.dart';
 import '../../../../utils/color_utils.dart';
 import '../../../groups/application/group_providers.dart';
@@ -16,6 +15,7 @@ Future<void> showHostFormSheet(
 }) {
   return showModalBottomSheet(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     builder: (context) {
       return Padding(
@@ -41,17 +41,10 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
   late final TextEditingController _nameController;
   late final TextEditingController _addressController;
   late final TextEditingController _portController;
-  late final TextEditingController _credentialNameController;
-  late final TextEditingController _credentialUsernameController;
-  late final TextEditingController _credentialPasswordController;
-  late final TextEditingController _credentialPrivateKeyController;
-  late final TextEditingController _credentialPassphraseController;
   String? _selectedGroup;
   String? _selectedCredential;
   late String _colorHex;
   bool _isSaving = false;
-  bool _createCredentialInline = false;
-  CredentialAuthKind _credentialAuthKind = CredentialAuthKind.password;
 
   static const _colorOptions = [
     '#4DD0E1',
@@ -70,11 +63,6 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
     _addressController = TextEditingController(text: host?.address);
     _portController =
         TextEditingController(text: (host?.port ?? 22).toString());
-    _credentialNameController = TextEditingController();
-    _credentialUsernameController = TextEditingController();
-    _credentialPasswordController = TextEditingController();
-    _credentialPrivateKeyController = TextEditingController();
-    _credentialPassphraseController = TextEditingController();
     _selectedGroup = host?.groupId;
     _selectedCredential = host?.credentialId;
     _colorHex = host?.colorHex ?? _colorOptions.first;
@@ -85,11 +73,6 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
     _nameController.dispose();
     _addressController.dispose();
     _portController.dispose();
-    _credentialNameController.dispose();
-    _credentialUsernameController.dispose();
-    _credentialPasswordController.dispose();
-    _credentialPrivateKeyController.dispose();
-    _credentialPassphraseController.dispose();
     super.dispose();
   }
 
@@ -155,15 +138,6 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
             const SizedBox(height: 16),
             credentials.when(
               data: (items) {
-                if (items.isEmpty && !_createCredentialInline) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (mounted) {
-                      setState(() {
-                        _createCredentialInline = true;
-                      });
-                    }
-                  });
-                }
                 final dropdownItems = [
                   DropdownMenuItem<String?>(
                     value: null,
@@ -176,81 +150,44 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
                           Text('${credential.name} (${credential.username})'),
                     ),
                 ];
-                final showInline = _createCredentialInline || items.isEmpty;
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (items.isNotEmpty) ...[
-                      Row(
-                        children: [
-                          Expanded(
-                            child: DropdownButtonFormField<String?>(
-                              initialValue: _selectedCredential,
-                              decoration: InputDecoration(
-                                labelText: l10n.hostFormCredentialLabel,
-                              ),
-                              isExpanded: true,
-                              items: dropdownItems,
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedCredential = value;
-                                });
-                              },
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String?>(
+                            initialValue: _selectedCredential,
+                            decoration: InputDecoration(
+                              labelText: l10n.hostFormCredentialLabel,
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          IconButton(
-                            tooltip: l10n.hostFormCreateCredential,
-                            onPressed: () async {
-                              await showCredentialFormSheet(context);
+                            isExpanded: true,
+                            items: dropdownItems,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedCredential = value;
+                              });
                             },
-                            icon: const Icon(Icons.add),
-                          ),
-                        ],
-                      ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              _createCredentialInline = !_createCredentialInline;
-                              if (!_createCredentialInline) {
-                                _credentialNameController.clear();
-                                _credentialUsernameController.clear();
-                                _credentialPasswordController.clear();
-                                _credentialPrivateKeyController.clear();
-                                _credentialPassphraseController.clear();
-                              }
-                            });
-                          },
-                          icon: Icon(
-                            showInline ? Icons.close : Icons.edit,
-                          ),
-                          label: Text(
-                            showInline
-                                ? l10n.hostFormInlineCancel
-                                : l10n.hostFormInlineToggle,
                           ),
                         ),
+                        const SizedBox(width: 12),
+                        IconButton(
+                          tooltip: l10n.hostFormCreateCredential,
+                          onPressed: () async {
+                            await showCredentialFormSheet(context);
+                          },
+                          icon: const Icon(Icons.add),
+                        ),
+                      ],
+                    ),
+                    if (items.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Text(
+                          l10n.hostFormCredentialMissing,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
                       ),
-                    ],
-                    if (showInline) ...[
-                      const SizedBox(height: 12),
-                      _CredentialInlineFields(
-                        title: l10n.hostFormCredentialInlineTitle,
-                        nameController: _credentialNameController,
-                        usernameController: _credentialUsernameController,
-                        passwordController: _credentialPasswordController,
-                        privateKeyController: _credentialPrivateKeyController,
-                        passphraseController: _credentialPassphraseController,
-                        authKind: _credentialAuthKind,
-                        onAuthKindChanged: (value) {
-                          setState(() {
-                            _credentialAuthKind = value;
-                          });
-                        },
-                      ),
-                    ],
                   ],
                 );
               },
@@ -348,43 +285,7 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
       );
       return;
     }
-    String? credentialId = _selectedCredential;
-    if (credentialId == null && _createCredentialInline) {
-      if (_credentialNameController.text.trim().isEmpty ||
-          _credentialUsernameController.text.trim().isEmpty ||
-          (_credentialAuthKind == CredentialAuthKind.password &&
-              _credentialPasswordController.text.isEmpty) ||
-          (_credentialAuthKind == CredentialAuthKind.keyPair &&
-              _credentialPrivateKeyController.text.trim().isEmpty)) {
-          messenger.showSnackBar(
-            SnackBar(content: Text(l10n.hostFormCredentialInlineRequired)),
-          );
-          return;
-      }
-      final credentialsRepo = ref.read(credentialsRepositoryProvider);
-      final uuid = ref.read(uuidProvider);
-      final credential = Credential(
-        id: uuid.v4(),
-        name: _credentialNameController.text.trim(),
-        username: _credentialUsernameController.text.trim(),
-        authKind: _credentialAuthKind,
-        password: _credentialAuthKind == CredentialAuthKind.password
-            ? _credentialPasswordController.text
-            : null,
-        privateKey: _credentialAuthKind == CredentialAuthKind.keyPair
-            ? _credentialPrivateKeyController.text.trim()
-            : null,
-        passphrase: _credentialAuthKind == CredentialAuthKind.keyPair
-            ? _credentialPassphraseController.text.trim().isEmpty
-                ? null
-                : _credentialPassphraseController.text.trim()
-            : null,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
-      await credentialsRepo.upsert(credential);
-      credentialId = credential.id;
-    }
+    final credentialId = _selectedCredential;
     if (credentialId == null) {
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.hostFormCredentialMissing)),
@@ -427,103 +328,5 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
       _isSaving = false;
     });
     Navigator.of(context).pop();
-  }
-}
-
-class _CredentialInlineFields extends StatelessWidget {
-  const _CredentialInlineFields({
-    required this.title,
-    required this.nameController,
-    required this.usernameController,
-    required this.passwordController,
-    required this.privateKeyController,
-    required this.passphraseController,
-    required this.authKind,
-    required this.onAuthKindChanged,
-  });
-
-  final String title;
-  final TextEditingController nameController;
-  final TextEditingController usernameController;
-  final TextEditingController passwordController;
-  final TextEditingController privateKeyController;
-  final TextEditingController passphraseController;
-  final CredentialAuthKind authKind;
-  final ValueChanged<CredentialAuthKind> onAuthKindChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final surface = Theme.of(context).colorScheme.surfaceContainerHighest;
-    return Card(
-      color: surface.withAlpha((0.15 * 255).round()),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: nameController,
-              decoration:
-                  InputDecoration(labelText: l10n.credentialFormLabel),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: usernameController,
-              decoration:
-                  InputDecoration(labelText: l10n.credentialFormUsername),
-            ),
-            const SizedBox(height: 12),
-            SegmentedButton<CredentialAuthKind>(
-              segments: [
-                ButtonSegment(
-                  value: CredentialAuthKind.password,
-                  label: Text(l10n.credentialAuthPassword),
-                  icon: const Icon(Icons.lock_outline),
-                ),
-                ButtonSegment(
-                  value: CredentialAuthKind.keyPair,
-                  label: Text(l10n.credentialAuthKeyPair),
-                  icon: const Icon(Icons.vpn_key),
-                ),
-              ],
-              selected: {authKind},
-              onSelectionChanged: (value) => onAuthKindChanged(value.first),
-            ),
-            const SizedBox(height: 12),
-            if (authKind == CredentialAuthKind.password)
-              TextField(
-                controller: passwordController,
-                decoration:
-                    InputDecoration(labelText: l10n.credentialFormPassword),
-                obscureText: true,
-              )
-            else ...[
-              TextField(
-                controller: privateKeyController,
-                decoration:
-                    InputDecoration(labelText: l10n.credentialFormPrivateKey),
-                maxLines: 4,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: passphraseController,
-                decoration:
-                    InputDecoration(labelText: l10n.credentialFormPassphrase),
-                obscureText: true,
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
   }
 }

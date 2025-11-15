@@ -980,6 +980,18 @@ abstract class AppLocalizations {
   /// **'Failed to open file: {error}'**
   String terminalSidebarFilesEditFailure(String error);
 
+  /// No description provided for @terminalSidebarFilesCopyPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy path'**
+  String get terminalSidebarFilesCopyPath;
+
+  /// No description provided for @terminalSidebarFilesCopyPathSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied: {path}'**
+  String terminalSidebarFilesCopyPathSuccess(String path);
+
   /// No description provided for @terminalSidebarFilesPathHint.
   ///
   /// In en, this message translates to:

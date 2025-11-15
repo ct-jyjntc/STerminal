@@ -308,6 +308,15 @@
       }
     }
   },
+  "terminalSidebarFilesCopyPath": "Copy path",
+  "terminalSidebarFilesCopyPathSuccess": "Copied: {path}",
+  "@terminalSidebarFilesCopyPathSuccess": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "terminalSidebarFilesPathHint": "Enter path",
   "terminalSidebarFilesPreviewUnsupported": "Only text files can be previewed.",
   "terminalSidebarHistoryTitle": "History",

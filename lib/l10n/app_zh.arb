@@ -217,6 +217,15 @@
       }
     }
   },
+  "terminalSidebarFilesCopyPath": "复制路径",
+  "terminalSidebarFilesCopyPathSuccess": "已复制：{path}",
+  "@terminalSidebarFilesCopyPathSuccess": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "terminalSidebarFilesPathHint": "输入路径",
   "terminalSidebarFilesPreviewUnsupported": "仅支持预览文本文件",
   "terminalSidebarHistoryTitle": "历史命令",

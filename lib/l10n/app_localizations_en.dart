@@ -509,6 +509,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get terminalSidebarFilesCopyPath => 'Copy path';
+
+  @override
+  String terminalSidebarFilesCopyPathSuccess(String path) {
+    return 'Copied: $path';
+  }
+
+  @override
   String get terminalSidebarFilesPathHint => 'Enter path';
 
   @override

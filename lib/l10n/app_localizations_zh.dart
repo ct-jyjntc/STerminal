@@ -501,6 +501,14 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get terminalSidebarFilesCopyPath => '复制路径';
+
+  @override
+  String terminalSidebarFilesCopyPathSuccess(String path) {
+    return '已复制：$path';
+  }
+
+  @override
   String get terminalSidebarFilesPathHint => '输入路径';
 
   @override

@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:dartssh2/dartssh2.dart';
 import 'package:file_selector/file_selector.dart' as file_selector;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sterminal/src/l10n/l10n.dart';
 import 'package:xterm/xterm.dart';
@@ -403,19 +403,19 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     });
   }
 
-Widget _buildSidebarContentWithContextMenu(
-  BuildContext context,
-  AppLocalizations l10n,
-  AsyncValue<List<Snippet>> snippets,
-) {
-  return _ContextMenuRegion(
-    onShowMenu: (position) {
-      if (_entryContextMenuActive) return;
-      _showFileContextMenu(context, position, parentPath: _currentDirectory);
-    },
-    child: _buildSidebarContent(context, l10n, snippets),
-  );
-}
+  Widget _buildSidebarContentWithContextMenu(
+    BuildContext context,
+    AppLocalizations l10n,
+    AsyncValue<List<Snippet>> snippets,
+  ) {
+    return _ContextMenuRegion(
+      onShowMenu: (position) {
+        if (_entryContextMenuActive) return;
+        _showFileContextMenu(context, position, parentPath: _currentDirectory);
+      },
+      child: _buildSidebarContent(context, l10n, snippets),
+    );
+  }
 
   Widget _buildSidebarContent(
     BuildContext context,
@@ -644,6 +644,7 @@ Widget _buildSidebarContentWithContextMenu(
               position,
               entry: node.entry,
               parentPath: node.isDir ? node.path : parentPath,
+              fullPath: node.path,
             ).whenComplete(() => _entryContextMenuActive = false);
           },
           child: Row(
@@ -997,6 +998,7 @@ Widget _buildSidebarContentWithContextMenu(
     Offset position, {
     SftpName? entry,
     String? parentPath,
+    String? fullPath,
   }) async {
     final overlay = Overlay.of(context);
     final renderBox = overlay.context.findRenderObject() as RenderBox;
@@ -1036,6 +1038,12 @@ Widget _buildSidebarContentWithContextMenu(
       );
       items.add(
         PopupMenuItem(
+          value: _FileContextAction.copyPath,
+          child: Text(context.l10n.terminalSidebarFilesCopyPath),
+        ),
+      );
+      items.add(
+        PopupMenuItem(
           value: _FileContextAction.delete,
           child: Text(context.l10n.terminalSidebarFilesDelete),
         ),
@@ -1064,6 +1072,16 @@ Widget _buildSidebarContentWithContextMenu(
       case _FileContextAction.download:
         if (entry != null && !isDir) {
           await _handleDownloadEntry(entry, parentPath: targetParent);
+        }
+        break;
+      case _FileContextAction.copyPath:
+        if (entry != null) {
+          final pathToCopy = fullPath ?? _joinPath(targetParent, entry.filename);
+          await Clipboard.setData(ClipboardData(text: pathToCopy));
+          if (!context.mounted) return;
+          _showSnackBarMessage(
+            context.l10n.terminalSidebarFilesCopyPathSuccess(pathToCopy),
+          );
         }
         break;
       case _FileContextAction.upload:
@@ -1461,6 +1479,7 @@ enum _FileContextAction {
   download,
   upload,
   delete,
+  copyPath,
 }
 
 class _ContextMenuRegion extends StatefulWidget {

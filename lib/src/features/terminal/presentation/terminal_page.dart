@@ -39,9 +39,11 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   StreamSubscription<Uint8List>? _stdoutSub;
   StreamSubscription<Uint8List>? _stderrSub;
   SftpClient? _sftp;
+  String _rootDirectory = '';
   String _currentDirectory = '';
-  List<SftpName> _fileEntries = const <SftpName>[];
-  bool _loadingFiles = false;
+  List<_FileNode> _fileTree = const <_FileNode>[];
+  Set<String> _loadingPaths = <String>{};
+  bool _initialFileLoading = false;
   String? _fileError;
   bool _entryContextMenuActive = false;
   List<String> _commandHistory = const [];
@@ -275,10 +277,12 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       _connecting = true;
       _error = null;
       _sftp = null;
+      _rootDirectory = '';
       _currentDirectory = '';
-      _fileEntries = const <SftpName>[];
+      _fileTree = const <_FileNode>[];
       _fileError = null;
-      _loadingFiles = false;
+      _loadingPaths = <String>{};
+      _initialFileLoading = false;
     });
     _terminal.buffer.clear();
     _terminal.write('${l10n.terminalConnectingMessage(host.address)}\r\n');
@@ -404,7 +408,7 @@ Widget _buildSidebarContentWithContextMenu(
   return _ContextMenuRegion(
     onShowMenu: (position) {
       if (_entryContextMenuActive) return;
-      _showFileContextMenu(context, position);
+      _showFileContextMenu(context, position, parentPath: _currentDirectory);
     },
     child: _buildSidebarContent(context, l10n, snippets),
   );
@@ -483,6 +487,8 @@ Widget _buildSidebarContentWithContextMenu(
       );
     }
     final hasPath = _currentDirectory.isNotEmpty;
+    final isRefreshing =
+        _initialFileLoading || _loadingPaths.contains(_currentDirectory);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -499,22 +505,13 @@ Widget _buildSidebarContentWithContextMenu(
               IconButton(
                 icon: const Icon(Icons.refresh),
                 tooltip: l10n.terminalSidebarFilesRefresh,
-                onPressed: !_loadingFiles && hasPath
+                onPressed: !isRefreshing && hasPath
                     ? () => _loadDirectory(_currentDirectory)
                     : null,
               ),
             ],
           ),
         ),
-        if (hasPath && _currentDirectory != '/')
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.arrow_upward),
-            title: Text(l10n.terminalSidebarFilesUp),
-            onTap: _loadingFiles
-                ? null
-                : () => _loadDirectory(_parentDirectory(_currentDirectory)),
-          ),
         Expanded(
           child: _buildFileList(context, l10n),
         ),
@@ -572,10 +569,10 @@ Widget _buildSidebarContentWithContextMenu(
   }
 
   Widget _buildFileList(BuildContext context, AppLocalizations l10n) {
-    if (_loadingFiles) {
+    if (_initialFileLoading && _fileTree.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_fileError != null) {
+    if (_fileError != null && _fileTree.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -595,38 +592,74 @@ Widget _buildSidebarContentWithContextMenu(
         ),
       );
     }
-    if (_fileEntries.isEmpty) {
+    if (_fileTree.isEmpty) {
       return Center(child: Text(l10n.terminalSidebarFilesEmpty));
     }
-    return ListView.separated(
+    final flatNodes = _flattenTree(_fileTree);
+    return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      itemCount: _fileEntries.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
+      itemCount: flatNodes.length,
       itemBuilder: (context, index) {
-        final entry = _fileEntries[index];
-        final isDir = _isDirectory(entry);
-        final VoidCallback onTap = isDir
-            ? () =>
-                _loadDirectory(_joinPath(_currentDirectory, entry.filename))
-            : () => _openFilePreview(entry);
+        final display = flatNodes[index];
+        final node = display.node;
+        final isDir = node.isDir;
+        final depth = display.depth;
+        final parentPath = _parentDirectory(node.path);
         return _HoverableItem(
-          onTap: onTap,
+          onTap: () async {
+            if (isDir) {
+              await _toggleDirectory(node);
+            } else {
+              setState(() {
+                _currentDirectory = parentPath;
+              });
+              await _openFilePreview(node.entry, parentPath);
+            }
+          },
           onContextMenu: (position) {
             _entryContextMenuActive = true;
+            _currentDirectory = node.isDir ? node.path : parentPath;
             _showFileContextMenu(
               context,
               position,
-              entry: entry,
+              entry: node.entry,
+              parentPath: node.isDir ? node.path : parentPath,
             ).whenComplete(() => _entryContextMenuActive = false);
           },
-          child: ListTile(
-            dense: true,
-            leading: Icon(isDir ? Icons.folder : Icons.insert_drive_file),
-            title: Text(entry.filename),
-            subtitle: !isDir && entry.attr.size != null
-                ? Text(_formatFileSize(entry.attr.size!))
-                : null,
-            onTap: null,
+          child: Row(
+            children: [
+              SizedBox(width: depth * 12.0),
+              if (isDir)
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: _buildExpandIcon(node),
+                )
+              else
+                const SizedBox(width: 28),
+              Expanded(
+                child: ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading:
+                      Icon(isDir ? Icons.folder : Icons.insert_drive_file),
+                  title: Text(node.name),
+                  subtitle: !isDir && node.entry.attr.size != null
+                      ? Text(_formatFileSize(node.entry.attr.size!))
+                      : null,
+                  trailing: !isDir && node.isLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : !isDir && node.error != null
+                          ? const Icon(Icons.error_outline,
+                              color: Colors.redAccent)
+                          : null,
+                  onTap: null,
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -639,7 +672,8 @@ Widget _buildSidebarContentWithContextMenu(
     final l10n = context.l10n;
     try {
       final sftp = await client.sftp();
-      final root = await sftp.absolute('.');
+      final homePath = await sftp.absolute('.');
+      const rootPath = '/';
       if (!mounted) {
         sftp.close();
         return;
@@ -647,24 +681,52 @@ Widget _buildSidebarContentWithContextMenu(
       _sftp?.close();
       setState(() {
         _sftp = sftp;
+        _rootDirectory = rootPath;
+        _currentDirectory = rootPath;
+        _fileTree = const <_FileNode>[];
+        _fileError = null;
+        _loadingPaths = {rootPath};
+        _initialFileLoading = true;
       });
-      await _loadDirectory(root);
+      final loadedRoot = await _loadDirectory(rootPath);
+      if (!loadedRoot && homePath != rootPath) {
+        // Fallback to the user's home directory if root is not accessible.
+        setState(() {
+          _rootDirectory = homePath;
+          _currentDirectory = homePath;
+          _fileTree = const <_FileNode>[];
+          _fileError = null;
+          _loadingPaths = {homePath};
+          _initialFileLoading = true;
+        });
+        await _loadDirectory(homePath);
+      }
     } catch (error) {
       if (!mounted) return;
       setState(() {
         _fileError = l10n.terminalSidebarFilesError('$error');
-        _loadingFiles = false;
+        _initialFileLoading = false;
       });
     }
   }
 
-  Future<void> _loadDirectory(String path) async {
+  Future<bool> _loadDirectory(String path, {bool setCurrent = true}) async {
     final sftp = _sftp;
-    if (sftp == null) return;
+    if (sftp == null) return false;
     final l10n = context.l10n;
     setState(() {
-      _loadingFiles = true;
+      if (setCurrent) _currentDirectory = path;
       _fileError = null;
+      _loadingPaths = {..._loadingPaths, path};
+      _fileTree = _updateNode(
+        _fileTree,
+        path,
+        (node) => node.copyWith(
+          isLoading: true,
+          error: null,
+          isExpanded: true,
+        ),
+      );
     });
     try {
       final entries = await sftp.listdir(path);
@@ -677,18 +739,46 @@ Widget _buildSidebarContentWithContextMenu(
         if (dirA != dirB) return dirA - dirB;
         return a.filename.toLowerCase().compareTo(b.filename.toLowerCase());
       });
-      if (!mounted) return;
+      if (!mounted) return false;
+      final nodes = entries
+          .map(
+            (entry) => _FileNode(
+              name: entry.filename,
+              path: _joinPath(path, entry.filename),
+              entry: entry,
+              isDir: _isDirectory(entry),
+            ),
+          )
+          .toList();
       setState(() {
-        _currentDirectory = path;
-        _fileEntries = entries;
-        _loadingFiles = false;
+        final isRootPath = path == _rootDirectory || _fileTree.isEmpty;
+        _fileTree = _setChildrenForPath(
+          _fileTree,
+          path,
+          nodes,
+          isRootPath: isRootPath,
+        );
+        _loadingPaths = {..._loadingPaths}..remove(path);
+        _initialFileLoading = false;
       });
+      return true;
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted) return false;
+      final message = l10n.terminalSidebarFilesError('$error');
       setState(() {
-        _fileError = l10n.terminalSidebarFilesError('$error');
-        _loadingFiles = false;
+        _fileError = message;
+        _loadingPaths = {..._loadingPaths}..remove(path);
+        _fileTree = _updateNode(
+          _fileTree,
+          path,
+          (node) => node.copyWith(
+            isLoading: false,
+            error: message,
+          ),
+        );
+        _initialFileLoading = false;
       });
+      return false;
     }
   }
 
@@ -724,6 +814,47 @@ Widget _buildSidebarContentWithContextMenu(
       normalized += separator;
     }
     return '$normalized$child';
+  }
+
+  List<_FileNode> _setChildrenForPath(
+    List<_FileNode> nodes,
+    String path,
+    List<_FileNode> children, {
+    bool isRootPath = false,
+  }) {
+    if (isRootPath && (nodes.isEmpty || path == _rootDirectory)) {
+      return children;
+    }
+    return _updateNode(
+      nodes,
+      path,
+      (node) => node.copyWith(
+        children: children,
+        isExpanded: true,
+        isLoading: false,
+        error: null,
+      ),
+    );
+  }
+
+  List<_FileNode> _updateNode(
+    List<_FileNode> nodes,
+    String path,
+    _FileNode Function(_FileNode) transform,
+  ) {
+    return nodes
+        .map((node) {
+          if (node.path == path) {
+            return transform(node);
+          }
+          if (path.startsWith('${node.path}/')) {
+            return node.copyWith(
+              children: _updateNode(node.children, path, transform),
+            );
+          }
+          return node;
+        })
+        .toList(growable: false);
   }
 
   bool _isTextFile(String filename) {
@@ -775,10 +906,72 @@ Widget _buildSidebarContentWithContextMenu(
     return '${size.toStringAsFixed(unitIndex == 0 ? 0 : 1)} ${units[unitIndex]}';
   }
 
+  Future<void> _toggleDirectory(_FileNode node) async {
+    if (!_ensureSftpReady()) return;
+    final shouldExpand = !node.isExpanded;
+    if (shouldExpand) {
+      setState(() {
+        _currentDirectory = node.path;
+        _fileTree = _updateNode(
+          _fileTree,
+          node.path,
+          (current) => current.copyWith(
+            isExpanded: true,
+            isLoading: current.children.isEmpty,
+            error: null,
+          ),
+        );
+        _loadingPaths = {..._loadingPaths, node.path};
+      });
+      await _loadDirectory(node.path, setCurrent: false);
+    } else {
+      setState(() {
+        _currentDirectory = node.path;
+        _fileTree = _updateNode(
+          _fileTree,
+          node.path,
+          (current) => current.copyWith(isExpanded: false),
+        );
+      });
+    }
+  }
+
+  List<_DisplayFileNode> _flattenTree(
+    List<_FileNode> nodes, [
+    int depth = 0,
+  ]) {
+    final flattened = <_DisplayFileNode>[];
+    for (final node in nodes) {
+      flattened.add(_DisplayFileNode(node: node, depth: depth));
+      if (node.isExpanded && node.children.isNotEmpty) {
+        flattened.addAll(_flattenTree(node.children, depth + 1));
+      }
+    }
+    return flattened;
+  }
+
+  Widget _buildExpandIcon(_FileNode node) {
+    if (node.isLoading) {
+      return const SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      );
+    }
+    if (node.error != null) {
+      return const Icon(Icons.error_outline, size: 20, color: Colors.redAccent);
+    }
+    return Icon(
+      node.isExpanded ? Icons.expand_more : Icons.chevron_right,
+      size: 20,
+    );
+  }
+
   Future<void> _showFileContextMenu(
     BuildContext context,
     Offset position, {
     SftpName? entry,
+    String? parentPath,
   }) async {
     final overlay = Overlay.of(context);
     final renderBox = overlay.context.findRenderObject() as RenderBox;
@@ -830,6 +1023,7 @@ Widget _buildSidebarContentWithContextMenu(
     );
     if (result == null) return;
     if (!mounted) return;
+    final targetParent = parentPath ?? _currentDirectory;
     switch (result) {
       case _FileContextAction.newFile:
         await _handleCreateEntry(isDirectory: false);
@@ -839,12 +1033,12 @@ Widget _buildSidebarContentWithContextMenu(
         break;
       case _FileContextAction.rename:
         if (entry != null) {
-          await _handleRenameEntry(entry);
+          await _handleRenameEntry(entry, parentPath: targetParent);
         }
         break;
       case _FileContextAction.download:
         if (entry != null && !isDir) {
-          await _handleDownloadEntry(entry);
+          await _handleDownloadEntry(entry, parentPath: targetParent);
         }
         break;
       case _FileContextAction.upload:
@@ -852,7 +1046,7 @@ Widget _buildSidebarContentWithContextMenu(
         break;
       case _FileContextAction.delete:
         if (entry != null) {
-          await _handleDeleteEntry(entry);
+          await _handleDeleteEntry(entry, parentPath: targetParent);
         }
         break;
     }
@@ -892,7 +1086,10 @@ Widget _buildSidebarContentWithContextMenu(
     }
   }
 
-  Future<void> _handleRenameEntry(SftpName entry) async {
+  Future<void> _handleRenameEntry(
+    SftpName entry, {
+    required String parentPath,
+  }) async {
     if (!_ensureSftpReady()) return;
     final l10n = context.l10n;
     final name = await _promptForInput(
@@ -900,11 +1097,11 @@ Widget _buildSidebarContentWithContextMenu(
       initial: entry.filename,
     );
     if (name == null || name.trim().isEmpty || name == entry.filename) return;
-    final newPath = _joinPath(_currentDirectory, name.trim());
-    final oldPath = _joinPath(_currentDirectory, entry.filename);
+    final newPath = _joinPath(parentPath, name.trim());
+    final oldPath = _joinPath(parentPath, entry.filename);
     try {
       await _sftp!.rename(oldPath, newPath);
-      await _loadDirectory(_currentDirectory);
+      await _loadDirectory(parentPath, setCurrent: false);
       if (!mounted) return;
       _showSnackBarMessage(l10n.terminalSidebarFilesRefreshSuccess);
     } catch (error) {
@@ -913,7 +1110,10 @@ Widget _buildSidebarContentWithContextMenu(
     }
   }
 
-  Future<void> _handleDeleteEntry(SftpName entry) async {
+  Future<void> _handleDeleteEntry(
+    SftpName entry, {
+    required String parentPath,
+  }) async {
     if (!_ensureSftpReady()) return;
     final l10n = context.l10n;
     final confirm = await showDialog<bool>(
@@ -938,14 +1138,14 @@ Widget _buildSidebarContentWithContextMenu(
     if (confirm != true) return;
     if (!mounted) return;
     if (!mounted) return;
-    final path = _joinPath(_currentDirectory, entry.filename);
+    final path = _joinPath(parentPath, entry.filename);
     try {
       if (_isDirectory(entry)) {
         await _sftp!.rmdir(path);
       } else {
         await _sftp!.remove(path);
       }
-      await _loadDirectory(_currentDirectory);
+      await _loadDirectory(parentPath, setCurrent: false);
       if (!mounted) return;
       _showSnackBarMessage(l10n.terminalSidebarFilesRefreshSuccess);
     } catch (error) {
@@ -954,7 +1154,10 @@ Widget _buildSidebarContentWithContextMenu(
     }
   }
 
-  Future<void> _handleDownloadEntry(SftpName entry) async {
+  Future<void> _handleDownloadEntry(
+    SftpName entry, {
+    required String parentPath,
+  }) async {
     final sftp = _sftp;
     if (sftp == null) return;
     final l10n = context.l10n;
@@ -970,7 +1173,7 @@ Widget _buildSidebarContentWithContextMenu(
       if (saveLocation == null) return;
       targetPath = saveLocation.path;
     }
-    final remotePath = _joinPath(_currentDirectory, entry.filename);
+    final remotePath = _joinPath(parentPath, entry.filename);
     try {
       final file = await sftp.open(remotePath, mode: SftpFileOpenMode.read);
       final bytes = await file.readBytes();
@@ -1019,7 +1222,10 @@ Widget _buildSidebarContentWithContextMenu(
     }
   }
 
-  Future<void> _openFilePreview(SftpName entry) async {
+  Future<void> _openFilePreview(
+    SftpName entry,
+    String parentPath,
+  ) async {
     if (_isDirectory(entry)) return;
     final l10n = context.l10n;
     if (!_isTextFile(entry.filename)) {
@@ -1028,7 +1234,7 @@ Widget _buildSidebarContentWithContextMenu(
     }
     final sftp = _sftp;
     if (sftp == null) return;
-    final remotePath = _joinPath(_currentDirectory, entry.filename);
+    final remotePath = _joinPath(parentPath, entry.filename);
     try {
       final file = await sftp.open(remotePath, mode: SftpFileOpenMode.read);
       final bytes = await file.readBytes();
@@ -1138,6 +1344,62 @@ Widget _buildSidebarContentWithContextMenu(
         .showSnackBar(SnackBar(content: Text(message)));
   }
 }
+
+class _FileNode {
+  const _FileNode({
+    required this.name,
+    required this.path,
+    required this.entry,
+    required this.isDir,
+    this.children = const <_FileNode>[],
+    this.isExpanded = false,
+    this.isLoading = false,
+    this.error,
+  });
+
+  final String name;
+  final String path;
+  final SftpName entry;
+  final bool isDir;
+  final List<_FileNode> children;
+  final bool isExpanded;
+  final bool isLoading;
+  final String? error;
+
+  _FileNode copyWith({
+    String? name,
+    String? path,
+    SftpName? entry,
+    bool? isDir,
+    List<_FileNode>? children,
+    bool? isExpanded,
+    bool? isLoading,
+    Object? error = _sentinel,
+  }) {
+    return _FileNode(
+      name: name ?? this.name,
+      path: path ?? this.path,
+      entry: entry ?? this.entry,
+      isDir: isDir ?? this.isDir,
+      children: children ?? this.children,
+      isExpanded: isExpanded ?? this.isExpanded,
+      isLoading: isLoading ?? this.isLoading,
+      error: identical(error, _sentinel) ? this.error : error as String?,
+    );
+  }
+}
+
+class _DisplayFileNode {
+  const _DisplayFileNode({
+    required this.node,
+    required this.depth,
+  });
+
+  final _FileNode node;
+  final int depth;
+}
+
+const _sentinel = Object();
 
 const TerminalTheme _lightTerminalTheme = TerminalTheme(
   cursor: Color(0xFF1F1F1F),

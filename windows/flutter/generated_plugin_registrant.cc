@@ -8,10 +8,13 @@
 
 #include <desktop_multi_window/desktop_multi_window_plugin.h>
 #include <file_selector_windows/file_selector_windows.h>
+#include <webview_windows/webview_windows_plugin.h>
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
   DesktopMultiWindowPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("DesktopMultiWindowPlugin"));
   FileSelectorWindowsRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("FileSelectorWindows"));
+  WebviewWindowsPluginRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("WebviewWindowsPlugin"));
 }

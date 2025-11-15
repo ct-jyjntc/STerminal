@@ -43,6 +43,7 @@ dependencies:
   intl: ^0.20.2
   file_selector: ^1.0.4
   desktop_multi_window: ^0.3.0
+  flutter_monaco: ^1.0.0
 
 dependency_overrides:
   desktop_multi_window:

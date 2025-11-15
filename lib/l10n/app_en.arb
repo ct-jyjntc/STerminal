@@ -143,6 +143,8 @@
       }
     }
   },
+  "settingsMultiWindow": "Multi-window terminals",
+  "settingsMultiWindowSubtitle": "Open each connection in a separate window",
   "settingsImport": "Import data",
   "settingsImportSubtitle": "Replace local data with a backup",
   "settingsImportAction": "Import",

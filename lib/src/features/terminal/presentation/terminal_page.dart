@@ -80,6 +80,8 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final hostAsync = ref.watch(hostByIdProvider(widget.hostId));
+    final isStandaloneWindow =
+        ref.watch(windowArgumentsProvider).shouldStartInTerminal;
 
     return hostAsync.when(
       loading: () => const Scaffold(
@@ -129,21 +131,28 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                       child: Column(
                         children: [
                           Padding(
-                            padding:
-                                const EdgeInsets.fromLTRB(24, 8, 24, 4),
+                            padding: isStandaloneWindow
+                                ? const EdgeInsets.fromLTRB(66, 16, 24, 4)
+                                : const EdgeInsets.fromLTRB(24, 8, 24, 4),
                             child: Row(
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 48),
-                                  child: IconButton(
-                                    icon: const Icon(Icons.arrow_back),
-                                    tooltip: MaterialLocalizations.of(context)
-                                        .backButtonTooltip,
-                                    onPressed: () =>
-                                        Navigator.of(context).maybePop(),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
+                                if (!isStandaloneWindow)
+                                  ...[
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 48),
+                                      child: IconButton(
+                                        icon: const Icon(Icons.arrow_back),
+                                        tooltip:
+                                            MaterialLocalizations.of(context)
+                                                .backButtonTooltip,
+                                        onPressed: () =>
+                                            Navigator.of(context).maybePop(),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                  ]
+                                else
+                                  const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
                                     '${host.name} (${host.address}:${host.port})',

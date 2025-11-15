@@ -25,10 +25,9 @@ class SettingsPage extends ConsumerWidget {
           children: [
             Text(
               l10n.settingsTitle,
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             ListItemCard(
@@ -79,6 +78,19 @@ class SettingsPage extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             ListItemCard(
+              leading: l10n.settingsMultiWindow.characters.first.toUpperCase(),
+              accentColor: Theme.of(context).colorScheme.tertiary,
+              title: l10n.settingsMultiWindow,
+              subtitle: l10n.settingsMultiWindowSubtitle,
+              actions: [
+                Switch.adaptive(
+                  value: settings.openConnectionsInNewWindow,
+                  onChanged: controller.setOpenConnectionsInNewWindow,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ListItemCard(
               leading: l10n.settingsDownloadPath.characters.first.toUpperCase(),
               accentColor: Theme.of(context).colorScheme.secondary,
               title: l10n.settingsDownloadPath,
@@ -104,8 +116,9 @@ class SettingsPage extends ConsumerWidget {
               leading: l10n.settingsHistoryLimit.characters.first.toUpperCase(),
               accentColor: Theme.of(context).colorScheme.primaryContainer,
               title: l10n.settingsHistoryLimit,
-              subtitle: l10n
-                  .settingsHistoryLimitSubtitle(settings.historyLimit),
+              subtitle: l10n.settingsHistoryLimitSubtitle(
+                settings.historyLimit,
+              ),
               actions: [
                 SizedBox(
                   width: 220,
@@ -115,8 +128,9 @@ class SettingsPage extends ConsumerWidget {
                     max: 200,
                     divisions: 19,
                     label: settings.historyLimit.toString(),
-                    onChanged: (value) => controller
-                        .setHistoryLimit(value.round().clamp(10, 200)),
+                    onChanged: (value) => controller.setHistoryLimit(
+                      value.round().clamp(10, 200),
+                    ),
                   ),
                 ),
               ],
@@ -128,9 +142,7 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  Future<void> _pickDownloadDirectory(
-    SettingsController controller,
-  ) async {
+  Future<void> _pickDownloadDirectory(SettingsController controller) async {
     final selected = await file_selector.getDirectoryPath();
     controller.setDownloadDirectory(selected);
   }

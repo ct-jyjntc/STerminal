@@ -42,6 +42,7 @@ dependencies:
   xterm: ^4.0.0
   intl: ^0.20.2
   file_selector: ^1.0.4
+  desktop_multi_window: ^0.3.0
 
 dev_dependencies:
   flutter_test:

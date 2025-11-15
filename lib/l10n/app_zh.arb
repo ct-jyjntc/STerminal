@@ -101,6 +101,8 @@
   "settingsConfirmSubtitle": "连接前弹出确认",
   "settingsConfirmDialogTitle": "连接到 {name}？",
   "settingsConfirmDialogMessage": "将为 {name} 打开新的终端会话，确认继续？",
+  "settingsMultiWindow": "多窗口连接",
+  "settingsMultiWindowSubtitle": "每次连接都在新窗口打开",
   "settingsImport": "导入数据",
   "settingsImportSubtitle": "使用备份覆盖本地数据",
   "settingsImportAction": "导入",

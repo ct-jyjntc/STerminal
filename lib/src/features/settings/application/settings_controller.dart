@@ -14,52 +14,62 @@ class SettingsState {
     required this.confirmBeforeConnect,
     this.downloadDirectory,
     this.historyLimit = 50,
+    this.openConnectionsInNewWindow = false,
   });
 
   final ThemeMode themeMode;
   final bool confirmBeforeConnect;
   final String? downloadDirectory;
   final int historyLimit;
+  final bool openConnectionsInNewWindow;
 
   SettingsState copyWith({
     ThemeMode? themeMode,
     bool? confirmBeforeConnect,
     String? downloadDirectory,
     int? historyLimit,
+    bool? openConnectionsInNewWindow,
   }) {
     return SettingsState(
       themeMode: themeMode ?? this.themeMode,
-      confirmBeforeConnect:
-          confirmBeforeConnect ?? this.confirmBeforeConnect,
+      confirmBeforeConnect: confirmBeforeConnect ?? this.confirmBeforeConnect,
       downloadDirectory: downloadDirectory ?? this.downloadDirectory,
       historyLimit: historyLimit ?? this.historyLimit,
+      openConnectionsInNewWindow:
+          openConnectionsInNewWindow ?? this.openConnectionsInNewWindow,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'themeMode': themeMode.name,
-        'confirmBeforeConnect': confirmBeforeConnect,
-        'downloadDirectory': downloadDirectory,
-        'historyLimit': historyLimit,
-      };
+    'themeMode': themeMode.name,
+    'confirmBeforeConnect': confirmBeforeConnect,
+    'downloadDirectory': downloadDirectory,
+    'historyLimit': historyLimit,
+    'openConnectionsInNewWindow': openConnectionsInNewWindow,
+  };
 
   factory SettingsState.fromJson(Map<String, dynamic> json) {
     final themeName = json['themeMode'] as String? ?? ThemeMode.dark.name;
     return SettingsState(
-      themeMode: ThemeMode.values
-          .firstWhere((mode) => mode.name == themeName, orElse: () => ThemeMode.dark),
+      themeMode: ThemeMode.values.firstWhere(
+        (mode) => mode.name == themeName,
+        orElse: () => ThemeMode.dark,
+      ),
       confirmBeforeConnect: json['confirmBeforeConnect'] as bool? ?? true,
       downloadDirectory: json['downloadDirectory'] as String?,
       historyLimit: json['historyLimit'] as int? ?? 50,
+      openConnectionsInNewWindow:
+          json['openConnectionsInNewWindow'] as bool? ?? false,
     );
   }
 
   static SettingsState defaults() => const SettingsState(
-        themeMode: ThemeMode.dark,
-        confirmBeforeConnect: true,
-        downloadDirectory: null,
-        historyLimit: 50,
-      );
+    themeMode: ThemeMode.dark,
+    confirmBeforeConnect: true,
+    downloadDirectory: null,
+    historyLimit: 50,
+    openConnectionsInNewWindow: false,
+  );
 }
 
 class SettingsController extends StateNotifier<SettingsState> {
@@ -70,9 +80,7 @@ class SettingsController extends StateNotifier<SettingsState> {
   static SettingsState _load(SharedPreferences prefs) {
     final raw = prefs.getString(_settingsKey);
     if (raw == null) return SettingsState.defaults();
-    return SettingsState.fromJson(
-      jsonDecode(raw) as Map<String, dynamic>,
-    );
+    return SettingsState.fromJson(jsonDecode(raw) as Map<String, dynamic>);
   }
 
   void setThemeMode(ThemeMode mode) {
@@ -95,6 +103,11 @@ class SettingsController extends StateNotifier<SettingsState> {
     _persist();
   }
 
+  void setOpenConnectionsInNewWindow(bool value) {
+    state = state.copyWith(openConnectionsInNewWindow: value);
+    _persist();
+  }
+
   void _persist() {
     _prefs.setString(_settingsKey, jsonEncode(state.toJson()));
   }
@@ -102,6 +115,6 @@ class SettingsController extends StateNotifier<SettingsState> {
 
 final settingsControllerProvider =
     StateNotifierProvider<SettingsController, SettingsState>((ref) {
-  final prefs = ref.watch(sharedPreferencesProvider);
-  return SettingsController(prefs);
-});
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return SettingsController(prefs);
+    });

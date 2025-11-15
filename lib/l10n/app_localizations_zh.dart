@@ -310,6 +310,12 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get settingsMultiWindow => '多窗口连接';
+
+  @override
+  String get settingsMultiWindowSubtitle => '每次连接都在新窗口打开';
+
+  @override
   String get settingsImport => '导入数据';
 
   @override

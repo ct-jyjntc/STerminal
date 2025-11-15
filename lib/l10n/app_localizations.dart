@@ -662,6 +662,18 @@ abstract class AppLocalizations {
   /// **'A terminal session will open for {name}. Continue?'**
   String settingsConfirmDialogMessage(String name);
 
+  /// No description provided for @settingsMultiWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Multi-window terminals'**
+  String get settingsMultiWindow;
+
+  /// No description provided for @settingsMultiWindowSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Open each connection in a separate window'**
+  String get settingsMultiWindowSubtitle;
+
   /// No description provided for @settingsImport.
   ///
   /// In en, this message translates to:

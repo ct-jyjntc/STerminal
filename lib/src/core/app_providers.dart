@@ -10,9 +10,14 @@ import '../domain/models/credential.dart';
 import '../domain/models/group.dart';
 import '../domain/models/host.dart';
 import '../domain/models/snippet.dart';
+import 'window_arguments.dart';
 
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError('SharedPreferences not initialized');
+});
+
+final windowArgumentsProvider = Provider<AppWindowArguments>((ref) {
+  return const AppWindowArguments.main();
 });
 
 final uuidProvider = Provider<Uuid>((ref) => const Uuid());
@@ -30,8 +35,9 @@ final groupsRepositoryProvider = Provider<GroupsRepository>((ref) {
 });
 
 final credentialsRepositoryProvider = Provider<CredentialsRepository>((ref) {
-  final repo =
-      CredentialsRepository(prefs: ref.watch(sharedPreferencesProvider));
+  final repo = CredentialsRepository(
+    prefs: ref.watch(sharedPreferencesProvider),
+  );
   ref.onDispose(repo.dispose);
   return repo;
 });

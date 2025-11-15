@@ -1,9 +1,12 @@
+import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sterminal/src/l10n/l10n.dart';
 
 import '../../../core/app_providers.dart';
+import '../../../core/window_arguments.dart';
 import '../../../domain/models/group.dart';
 import '../../../domain/models/host.dart';
 import '../../../routing/app_route.dart';
@@ -41,12 +44,10 @@ class ConnectionsPage extends ConsumerWidget {
               const SizedBox(height: 16),
               Expanded(
                 child: hosts.when(
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                  error: (error, _) => Center(
-                    child: Text(l10n.connectionsLoadError('$error')),
-                  ),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (error, _) =>
+                      Center(child: Text(l10n.connectionsLoadError('$error'))),
                   data: (hostItems) {
                     final credentialMap = {
                       for (final credential in credentials.value ?? [])
@@ -69,10 +70,8 @@ class ConnectionsPage extends ConsumerWidget {
                                   host.id,
                           onConnectRequested: () =>
                               _handleConnect(context, ref, host),
-                          onEditRequested: () => showHostFormSheet(
-                            context,
-                            host: host,
-                          ),
+                          onEditRequested: () =>
+                              showHostFormSheet(context, host: host),
                           onDeleteRequested: () =>
                               _confirmDeleteHost(context, ref, host),
                           subtitle: subtitle,
@@ -130,11 +129,35 @@ class ConnectionsPage extends ConsumerWidget {
     final allowed = await _maybeConfirmConnect(context, ref, host);
     if (!allowed) return;
     ref.read(selectedHostProvider.notifier).state = host.id;
+    final openedInNewWindow = await _maybeOpenInNewWindow(ref, host);
+    if (openedInNewWindow) {
+      return;
+    }
     if (!context.mounted) return;
     context.pushNamed(
       AppRoute.terminal.name,
       pathParameters: {'hostId': host.id},
     );
+  }
+
+  Future<bool> _maybeOpenInNewWindow(WidgetRef ref, Host host) async {
+    final settings = ref.read(settingsControllerProvider);
+    if (!settings.openConnectionsInNewWindow || !_supportsDesktopMultiWindow) {
+      return false;
+    }
+    try {
+      final args = AppWindowArguments.terminal(host.id).encode();
+      final controller = await WindowController.create(
+        WindowConfiguration(arguments: args, hiddenAtLaunch: true),
+      );
+      if (defaultTargetPlatform != TargetPlatform.macOS) {
+        await controller.show();
+      }
+      return true;
+    } catch (error) {
+      debugPrint('Failed to open terminal window: $error');
+      return false;
+    }
   }
 
   Future<bool> _maybeConfirmConnect(
@@ -168,6 +191,16 @@ class ConnectionsPage extends ConsumerWidget {
   }
 }
 
+bool get _supportsDesktopMultiWindow {
+  if (kIsWeb) return false;
+  return switch (defaultTargetPlatform) {
+    TargetPlatform.linux ||
+    TargetPlatform.macOS ||
+    TargetPlatform.windows => true,
+    _ => false,
+  };
+}
+
 class _Toolbar extends ConsumerStatefulWidget {
   const _Toolbar({required this.groupsAsync});
 
@@ -183,8 +216,9 @@ class _ToolbarState extends ConsumerState<_Toolbar> {
   @override
   void initState() {
     super.initState();
-    _searchController =
-        TextEditingController(text: ref.read(hostSearchQueryProvider));
+    _searchController = TextEditingController(
+      text: ref.read(hostSearchQueryProvider),
+    );
   }
 
   @override
@@ -203,10 +237,9 @@ class _ToolbarState extends ConsumerState<_Toolbar> {
       children: [
         Text(
           l10n.connectionsTitle,
-          style: Theme.of(context)
-              .textTheme
-              .headlineMedium
-              ?.copyWith(fontWeight: FontWeight.bold),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         Row(
@@ -242,17 +275,17 @@ class _ToolbarState extends ConsumerState<_Toolbar> {
                 ChoiceChip(
                   label: Text(l10n.filterUngrouped),
                   selected: selectedGroup == 'ungrouped',
-                  onSelected: (_) => ref
-                      .read(hostGroupFilterProvider.notifier)
-                      .state = 'ungrouped',
+                  onSelected: (_) =>
+                      ref.read(hostGroupFilterProvider.notifier).state =
+                          'ungrouped',
                 ),
                 for (final group in groupItems)
                   ChoiceChip(
                     label: Text(group.name),
                     selected: selectedGroup == group.id,
-                    onSelected: (_) => ref
-                        .read(hostGroupFilterProvider.notifier)
-                        .state = group.id,
+                    onSelected: (_) =>
+                        ref.read(hostGroupFilterProvider.notifier).state =
+                            group.id,
                   ),
               ],
             );

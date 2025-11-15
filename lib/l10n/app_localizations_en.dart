@@ -315,6 +315,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get settingsMultiWindow => 'Multi-window terminals';
+
+  @override
+  String get settingsMultiWindowSubtitle =>
+      'Open each connection in a separate window';
+
+  @override
   String get settingsImport => 'Import data';
 
   @override

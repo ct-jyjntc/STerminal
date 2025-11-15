@@ -117,14 +117,17 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                                 const EdgeInsets.fromLTRB(24, 16, 24, 8),
                             child: Row(
                               children: [
-                                IconButton(
-                                  icon: const Icon(Icons.arrow_back),
-                                  tooltip: MaterialLocalizations.of(context)
-                                      .backButtonTooltip,
-                                  onPressed: () =>
-                                      Navigator.of(context).maybePop(),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 48),
+                                  child: IconButton(
+                                    icon: const Icon(Icons.arrow_back),
+                                    tooltip: MaterialLocalizations.of(context)
+                                        .backButtonTooltip,
+                                    onPressed: () =>
+                                        Navigator.of(context).maybePop(),
+                                  ),
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
                                     '${host.name} (${host.address}:${host.port})',
@@ -140,7 +143,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                           Expanded(
                             child: Padding(
                               padding:
-                                  const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                                  const EdgeInsets.fromLTRB(16, 0, 16, 16),
                               child: DecoratedBox(
                                 decoration:
                                     BoxDecoration(color: terminalTheme.background),

@@ -502,6 +502,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get terminalSidebarHistoryTitle => 'History';
+
+  @override
+  String get terminalSidebarHistoryEmpty => 'No commands yet.';
+
+  @override
+  String get terminalSidebarHistoryClear => 'Clear history';
+
+  @override
   String get settingsDownloadPath => 'Download folder';
 
   @override

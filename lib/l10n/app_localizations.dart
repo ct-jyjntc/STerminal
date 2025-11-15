@@ -968,6 +968,24 @@ abstract class AppLocalizations {
   /// **'Failed to open file: {error}'**
   String terminalSidebarFilesEditFailure(String error);
 
+  /// No description provided for @terminalSidebarHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get terminalSidebarHistoryTitle;
+
+  /// No description provided for @terminalSidebarHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No commands yet.'**
+  String get terminalSidebarHistoryEmpty;
+
+  /// No description provided for @terminalSidebarHistoryClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear history'**
+  String get terminalSidebarHistoryClear;
+
   /// No description provided for @settingsDownloadPath.
   ///
   /// In en, this message translates to:

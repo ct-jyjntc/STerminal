@@ -43,6 +43,8 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   bool _loadingFiles = false;
   String? _fileError;
   bool _entryContextMenuActive = false;
+  List<String> _commandHistory = const [];
+  final StringBuffer _commandBuffer = StringBuffer();
   Host? _currentHost;
   Credential? _currentCredential;
   bool _connecting = false;
@@ -298,6 +300,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       _stdoutSub = session.stdout.listen(_onData);
       _stderrSub = session.stderr.listen(_onData);
       _terminal.onOutput = (data) {
+        _handleTerminalInput(data);
         session.write(Uint8List.fromList(utf8.encode(data)));
       };
       _terminal.onResize = (width, height, pixelWidth, pixelHeight) {
@@ -334,6 +337,35 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   void _onData(Uint8List data) {
     final text = utf8.decode(data);
     _terminal.write(text);
+  }
+
+  void _handleTerminalInput(String data) {
+    for (final codeUnit in data.codeUnits) {
+      if (codeUnit == 13 || codeUnit == 10) {
+        final command = _commandBuffer.toString().trim();
+        _commandBuffer.clear();
+        if (command.isNotEmpty) {
+          setState(() {
+            final history = List<String>.from(_commandHistory);
+            history.remove(command);
+            history.insert(0, command);
+            if (history.length > 100) {
+              history.removeRange(100, history.length);
+            }
+            _commandHistory = history;
+          });
+        }
+      } else if (codeUnit == 127 || codeUnit == 8) {
+        if (_commandBuffer.isNotEmpty) {
+          final text = _commandBuffer.toString();
+          _commandBuffer
+            ..clear()
+            ..write(text.substring(0, text.length - 1));
+        }
+      } else if (codeUnit >= 32 && codeUnit < 127) {
+        _commandBuffer.writeCharCode(codeUnit);
+      }
+    }
   }
 
 Widget _buildSidebarContentWithContextMenu(
@@ -408,15 +440,7 @@ Widget _buildSidebarContentWithContextMenu(
           ],
         );
       case TerminalSidebarTab.history:
-        return Center(
-          child: Text(
-            l10n.terminalSidebarHistoryPlaceholder,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(color: Theme.of(context).hintColor),
-          ),
-        );
+        return _buildHistorySidebar(context, l10n);
     }
   }
 
@@ -465,6 +489,54 @@ Widget _buildSidebarContentWithContextMenu(
           ),
         Expanded(
           child: _buildFileList(context, l10n),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHistorySidebar(
+      BuildContext context, AppLocalizations l10n) {
+    if (_commandHistory.isEmpty) {
+      return Center(
+        child: Text(
+          l10n.terminalSidebarHistoryEmpty,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: Theme.of(context).hintColor),
+        ),
+      );
+    }
+    return Column(
+      children: [
+        ListTile(
+          title: Text(l10n.terminalSidebarHistoryTitle),
+          trailing: IconButton(
+            tooltip: l10n.terminalSidebarHistoryClear,
+            onPressed: () {
+              setState(() {
+                _commandHistory = const [];
+              });
+            },
+            icon: const Icon(Icons.delete_sweep_outlined),
+          ),
+        ),
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemBuilder: (context, index) {
+              final command = _commandHistory[index];
+              return ListTile(
+                dense: true,
+                title: Text(command),
+                onTap: () {
+                  _terminal.paste('$command ');
+                },
+              );
+            },
+            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemCount: _commandHistory.length,
+          ),
         ),
       ],
     );

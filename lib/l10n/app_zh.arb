@@ -215,6 +215,9 @@
       }
     }
   },
+  "terminalSidebarHistoryTitle": "历史命令",
+  "terminalSidebarHistoryEmpty": "暂无命令",
+  "terminalSidebarHistoryClear": "清空历史",
   "settingsDownloadPath": "下载位置",
   "settingsDownloadPathUnset": "未设置",
   "settingsDownloadPathChoose": "选择文件夹",

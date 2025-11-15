@@ -495,6 +495,15 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get terminalSidebarHistoryTitle => '历史命令';
+
+  @override
+  String get terminalSidebarHistoryEmpty => '暂无命令';
+
+  @override
+  String get terminalSidebarHistoryClear => '清空历史';
+
+  @override
   String get settingsDownloadPath => '下载位置';
 
   @override

@@ -306,6 +306,9 @@
       }
     }
   },
+  "terminalSidebarHistoryTitle": "History",
+  "terminalSidebarHistoryEmpty": "No commands yet.",
+  "terminalSidebarHistoryClear": "Clear history",
   "settingsDownloadPath": "Download folder",
   "settingsDownloadPathUnset": "Not set",
   "settingsDownloadPathChoose": "Choose folder",

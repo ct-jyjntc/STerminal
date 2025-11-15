@@ -96,6 +96,10 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
             }
             _maybeConnect(host, credential);
             final snippets = ref.watch(snippetsStreamProvider);
+            final brightness = Theme.of(context).brightness;
+            final isDark = brightness == Brightness.dark;
+            final terminalTheme =
+                isDark ? TerminalThemes.defaultTheme : _lightTerminalTheme;
             return Scaffold(
               appBar: AppBar(
                 title: Text('${host.name} (${host.address}:${host.port})'),
@@ -123,12 +127,15 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                 children: [
                   Expanded(
                     child: DecoratedBox(
-                      decoration: const BoxDecoration(color: Colors.black),
+                      decoration: BoxDecoration(color: terminalTheme.background),
                       child: TerminalView(
                         _terminal,
                         controller: _terminalController,
                         autofocus: true,
                         padding: const EdgeInsets.all(16),
+                        theme: terminalTheme,
+                        keyboardAppearance:
+                            isDark ? Brightness.dark : Brightness.light,
                         backgroundOpacity: 1.0,
                       ),
                     ),
@@ -303,3 +310,29 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     _terminal.write(text);
   }
 }
+
+const TerminalTheme _lightTerminalTheme = TerminalTheme(
+  cursor: Color(0xFF1F1F1F),
+  selection: Color(0x33212121),
+  foreground: Color(0xFF202124),
+  background: Color(0xFFF8F9FA),
+  black: Color(0xFF000000),
+  red: Color(0xFFB3261E),
+  green: Color(0xFF0F9D58),
+  yellow: Color(0xFFBC8B2C),
+  blue: Color(0xFF1A73E8),
+  magenta: Color(0xFF9336A6),
+  cyan: Color(0xFF018786),
+  white: Color(0xFFE5E5E5),
+  brightBlack: Color(0xFF5F6368),
+  brightRed: Color(0xFFE95420),
+  brightGreen: Color(0xFF34A853),
+  brightYellow: Color(0xFFF9AB00),
+  brightBlue: Color(0xFF4285F4),
+  brightMagenta: Color(0xFFAA46BB),
+  brightCyan: Color(0xFF24C1C7),
+  brightWhite: Color(0xFF202124),
+  searchHitBackground: Color(0xFFFFFF8D),
+  searchHitBackgroundCurrent: Color(0xFF8AB4F8),
+  searchHitForeground: Color(0xFF000000),
+);

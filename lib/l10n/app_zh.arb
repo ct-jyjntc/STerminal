@@ -2,6 +2,7 @@
   "@@locale": "zh",
   "appTitle": "STerminal",
   "commonCancel": "取消",
+  "commonConfirm": "确认",
   "commonDelete": "删除",
   "connectionsTitle": "连接",
   "connectionsNewHost": "新建主机",
@@ -138,6 +139,64 @@
   },
   "terminalSidebarFilesRefresh": "刷新",
   "terminalSidebarFilesUp": "上一级",
+  "terminalSidebarFilesRefreshSuccess": "已刷新",
+  "terminalSidebarFilesNewFile": "新建文件",
+  "terminalSidebarFilesNewFolder": "新建文件夹",
+  "terminalSidebarFilesRename": "重命名",
+  "terminalSidebarFilesDownload": "下载文件",
+  "terminalSidebarFilesUpload": "上传文件",
+  "terminalSidebarFilesDelete": "删除",
+  "terminalSidebarFilesNewFilePrompt": "输入文件名",
+  "terminalSidebarFilesNewFolderPrompt": "输入文件夹名称",
+  "terminalSidebarFilesRenamePrompt": "重命名 {name}",
+  "@terminalSidebarFilesRenamePrompt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "terminalSidebarFilesDeleteTitle": "删除项目",
+  "terminalSidebarFilesDeleteConfirm": "确定删除 {name} 吗？该操作无法撤销。",
+  "@terminalSidebarFilesDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "terminalSidebarFilesDownloadSuccess": "已保存到 {path}",
+  "@terminalSidebarFilesDownloadSuccess": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "terminalSidebarFilesDownloadFailure": "下载失败：{error}",
+  "@terminalSidebarFilesDownloadFailure": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "terminalSidebarFilesUploadSuccess": "已上传 {name}",
+  "@terminalSidebarFilesUploadSuccess": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "terminalSidebarFilesUploadFailure": "上传失败：{error}",
+  "@terminalSidebarFilesUploadFailure": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "terminalSidebarHistoryPlaceholder": "暂无历史记录",
   "terminalCredentialDeleted": "凭证已删除",
   "terminalCredentialError": "凭证错误：{error}",

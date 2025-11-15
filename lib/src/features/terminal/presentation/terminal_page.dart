@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dartssh2/dartssh2.dart';
+import 'package:file_selector/file_selector.dart' as file_selector;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sterminal/src/l10n/l10n.dart';
@@ -36,7 +38,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   StreamSubscription<Uint8List>? _stderrSub;
   SftpClient? _sftp;
   String _currentDirectory = '';
-  List<SftpName> _fileEntries = const [];
+  List<SftpName> _fileEntries = const <SftpName>[];
   bool _loadingFiles = false;
   String? _fileError;
   Host? _currentHost;
@@ -203,13 +205,24 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                               },
                             ),
                           ),
-                          Expanded(
-                            child: _buildSidebarContent(
-                              context,
-                              l10n,
-                              snippets,
-                            ),
-                          ),
+        Expanded(
+          child: _sidebarTab == TerminalSidebarTab.files
+              ? GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onSecondaryTapDown: (details) =>
+                      _showFileContextMenu(context, details.globalPosition),
+                  child: _buildSidebarContent(
+                    context,
+                    l10n,
+                    snippets,
+                  ),
+                )
+              : _buildSidebarContent(
+                  context,
+                  l10n,
+                  snippets,
+                ),
+        ),
                           if (_error != null)
                             Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -258,7 +271,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       _error = null;
       _sftp = null;
       _currentDirectory = '';
-      _fileEntries = const [];
+      _fileEntries = const <SftpName>[];
       _fileError = null;
       _loadingFiles = false;
     });
@@ -488,16 +501,22 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       itemBuilder: (context, index) {
         final entry = _fileEntries[index];
         final isDir = _isDirectory(entry);
-        return ListTile(
-          dense: true,
-          leading: Icon(isDir ? Icons.folder : Icons.insert_drive_file),
-          title: Text(entry.filename),
-          subtitle: !isDir && entry.attr.size != null
-              ? Text(_formatFileSize(entry.attr.size!))
-              : null,
-          onTap: isDir
-              ? () => _loadDirectory(_joinPath(_currentDirectory, entry.filename))
-              : null,
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onSecondaryTapDown: (details) =>
+              _showFileContextMenu(context, details.globalPosition, entry: entry),
+          child: ListTile(
+            dense: true,
+            leading: Icon(isDir ? Icons.folder : Icons.insert_drive_file),
+            title: Text(entry.filename),
+            subtitle: !isDir && entry.attr.size != null
+                ? Text(_formatFileSize(entry.attr.size!))
+                : null,
+            onTap: isDir
+                ? () =>
+                    _loadDirectory(_joinPath(_currentDirectory, entry.filename))
+                : null,
+          ),
         );
       },
     );
@@ -596,6 +615,288 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     }
     return '${size.toStringAsFixed(unitIndex == 0 ? 0 : 1)} ${units[unitIndex]}';
   }
+
+  Future<void> _showFileContextMenu(
+    BuildContext context,
+    Offset position, {
+    SftpName? entry,
+  }) async {
+    final overlay = Overlay.of(context);
+    final renderBox = overlay.context.findRenderObject() as RenderBox;
+    final rect = RelativeRect.fromRect(
+      Rect.fromPoints(position, position),
+      Offset.zero & renderBox.size,
+    );
+    final isDir = entry != null && _isDirectory(entry);
+    final items = <PopupMenuEntry<_FileContextAction>>[
+      PopupMenuItem(
+        value: _FileContextAction.newFile,
+        child: Text(context.l10n.terminalSidebarFilesNewFile),
+      ),
+      PopupMenuItem(
+        value: _FileContextAction.newFolder,
+        child: Text(context.l10n.terminalSidebarFilesNewFolder),
+      ),
+      PopupMenuItem(
+        value: _FileContextAction.upload,
+        child: Text(context.l10n.terminalSidebarFilesUpload),
+      ),
+    ];
+    if (entry != null) {
+      items.add(const PopupMenuDivider());
+      items.add(
+        PopupMenuItem(
+          value: _FileContextAction.rename,
+          child: Text(context.l10n.terminalSidebarFilesRename),
+        ),
+      );
+      items.add(
+        PopupMenuItem(
+          value: _FileContextAction.download,
+          enabled: !isDir,
+          child: Text(context.l10n.terminalSidebarFilesDownload),
+        ),
+      );
+      items.add(
+        PopupMenuItem(
+          value: _FileContextAction.delete,
+          child: Text(context.l10n.terminalSidebarFilesDelete),
+        ),
+      );
+    }
+    final result = await showMenu<_FileContextAction>(
+      context: context,
+      position: rect,
+      items: items,
+    );
+    if (result == null) return;
+    if (!mounted) return;
+    switch (result) {
+      case _FileContextAction.newFile:
+        await _handleCreateEntry(isDirectory: false);
+        break;
+      case _FileContextAction.newFolder:
+        await _handleCreateEntry(isDirectory: true);
+        break;
+      case _FileContextAction.rename:
+        if (entry != null) {
+          await _handleRenameEntry(entry);
+        }
+        break;
+      case _FileContextAction.download:
+        if (entry != null && !isDir) {
+          await _handleDownloadEntry(entry);
+        }
+        break;
+      case _FileContextAction.upload:
+        await _handleUploadFile();
+        break;
+      case _FileContextAction.delete:
+        if (entry != null) {
+          await _handleDeleteEntry(entry);
+        }
+        break;
+    }
+  }
+
+  Future<void> _handleCreateEntry({
+    required bool isDirectory,
+  }) async {
+    if (!_ensureSftpReady()) return;
+    final l10n = context.l10n;
+    final name = await _promptForInput(
+      title: isDirectory
+          ? l10n.terminalSidebarFilesNewFolderPrompt
+          : l10n.terminalSidebarFilesNewFilePrompt,
+    );
+    if (name == null || name.trim().isEmpty) return;
+    final path = _joinPath(_currentDirectory, name.trim());
+    try {
+      final sftp = _sftp!;
+      if (isDirectory) {
+        await sftp.mkdir(path);
+      } else {
+        final file = await sftp.open(
+          path,
+          mode: SftpFileOpenMode.create |
+              SftpFileOpenMode.write |
+              SftpFileOpenMode.truncate,
+        );
+        await file.close();
+      }
+      await _loadDirectory(_currentDirectory);
+      if (!mounted) return;
+      _showSnackBarMessage(l10n.terminalSidebarFilesRefreshSuccess);
+    } catch (error) {
+      if (!mounted) return;
+      _showSnackBarMessage(l10n.terminalSidebarFilesError('$error'));
+    }
+  }
+
+  Future<void> _handleRenameEntry(SftpName entry) async {
+    if (!_ensureSftpReady()) return;
+    final l10n = context.l10n;
+    final name = await _promptForInput(
+      title: l10n.terminalSidebarFilesRenamePrompt(entry.filename),
+      initial: entry.filename,
+    );
+    if (name == null || name.trim().isEmpty || name == entry.filename) return;
+    final newPath = _joinPath(_currentDirectory, name.trim());
+    final oldPath = _joinPath(_currentDirectory, entry.filename);
+    try {
+      await _sftp!.rename(oldPath, newPath);
+      await _loadDirectory(_currentDirectory);
+      if (!mounted) return;
+      _showSnackBarMessage(l10n.terminalSidebarFilesRefreshSuccess);
+    } catch (error) {
+      if (!mounted) return;
+      _showSnackBarMessage(l10n.terminalSidebarFilesError('$error'));
+    }
+  }
+
+  Future<void> _handleDeleteEntry(SftpName entry) async {
+    if (!_ensureSftpReady()) return;
+    final l10n = context.l10n;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.terminalSidebarFilesDeleteTitle),
+        content: Text(
+          l10n.terminalSidebarFilesDeleteConfirm(entry.filename),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.commonConfirm),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    if (!mounted) return;
+    if (!mounted) return;
+    final path = _joinPath(_currentDirectory, entry.filename);
+    try {
+      if (_isDirectory(entry)) {
+        await _sftp!.rmdir(path);
+      } else {
+        await _sftp!.remove(path);
+      }
+      await _loadDirectory(_currentDirectory);
+      if (!mounted) return;
+      _showSnackBarMessage(l10n.terminalSidebarFilesRefreshSuccess);
+    } catch (error) {
+      if (!mounted) return;
+      _showSnackBarMessage(l10n.terminalSidebarFilesError('$error'));
+    }
+  }
+
+  Future<void> _handleDownloadEntry(SftpName entry) async {
+    final sftp = _sftp;
+    if (sftp == null) return;
+    final l10n = context.l10n;
+    final saveLocation = await file_selector.getSaveLocation(
+      suggestedName: entry.filename,
+    );
+    if (saveLocation == null) return;
+    final path = _joinPath(_currentDirectory, entry.filename);
+    try {
+      final file = await sftp.open(path, mode: SftpFileOpenMode.read);
+      final bytes = await file.readBytes();
+      await file.close();
+      final output = File(saveLocation.path);
+      await output.writeAsBytes(bytes);
+      if (!mounted) return;
+      _showSnackBarMessage(
+        l10n.terminalSidebarFilesDownloadSuccess(saveLocation.path),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      _showSnackBarMessage(
+        l10n.terminalSidebarFilesDownloadFailure('$error'),
+      );
+    }
+  }
+
+  Future<void> _handleUploadFile() async {
+    if (!_ensureSftpReady()) return;
+    final l10n = context.l10n;
+    final selected = await file_selector.openFile();
+    if (selected == null) return;
+    final data = await selected.readAsBytes();
+    final remotePath = _joinPath(_currentDirectory, selected.name);
+    try {
+      final file = await _sftp!.open(
+        remotePath,
+        mode: SftpFileOpenMode.create |
+            SftpFileOpenMode.write |
+            SftpFileOpenMode.truncate,
+      );
+      await file.writeBytes(Uint8List.fromList(data));
+      await file.close();
+      await _loadDirectory(_currentDirectory);
+      if (!mounted) return;
+      _showSnackBarMessage(
+        l10n.terminalSidebarFilesUploadSuccess(selected.name),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      _showSnackBarMessage(
+        l10n.terminalSidebarFilesUploadFailure('$error'),
+      );
+    }
+  }
+
+  Future<String?> _promptForInput({
+    required String title,
+    String initial = '',
+  }) async {
+    final controller = TextEditingController(text: initial);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(context.l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              final value = controller.text.trim();
+              if (value.isEmpty) return;
+              Navigator.of(dialogContext).pop(value);
+            },
+            child: Text(context.l10n.commonConfirm),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    return result?.trim();
+  }
+
+  bool _ensureSftpReady() {
+    if (_sftp == null || _currentDirectory.isEmpty) {
+      _showSnackBarMessage(context.l10n.terminalSidebarFilesConnect);
+      return false;
+    }
+    return true;
+  }
+
+  void _showSnackBarMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
 }
 
 const TerminalTheme _lightTerminalTheme = TerminalTheme(
@@ -625,3 +926,12 @@ const TerminalTheme _lightTerminalTheme = TerminalTheme(
 );
 
 enum TerminalSidebarTab { files, commands, history }
+
+enum _FileContextAction {
+  newFile,
+  newFolder,
+  rename,
+  download,
+  upload,
+  delete,
+}

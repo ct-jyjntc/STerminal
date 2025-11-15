@@ -15,6 +15,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonCancel => '取消';
 
   @override
+  String get commonConfirm => '确认';
+
+  @override
   String get commonDelete => '删除';
 
   @override
@@ -414,6 +417,66 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get terminalSidebarFilesUp => '上一级';
+
+  @override
+  String get terminalSidebarFilesRefreshSuccess => '已刷新';
+
+  @override
+  String get terminalSidebarFilesNewFile => '新建文件';
+
+  @override
+  String get terminalSidebarFilesNewFolder => '新建文件夹';
+
+  @override
+  String get terminalSidebarFilesRename => '重命名';
+
+  @override
+  String get terminalSidebarFilesDownload => '下载文件';
+
+  @override
+  String get terminalSidebarFilesUpload => '上传文件';
+
+  @override
+  String get terminalSidebarFilesDelete => '删除';
+
+  @override
+  String get terminalSidebarFilesNewFilePrompt => '输入文件名';
+
+  @override
+  String get terminalSidebarFilesNewFolderPrompt => '输入文件夹名称';
+
+  @override
+  String terminalSidebarFilesRenamePrompt(String name) {
+    return '重命名 $name';
+  }
+
+  @override
+  String get terminalSidebarFilesDeleteTitle => '删除项目';
+
+  @override
+  String terminalSidebarFilesDeleteConfirm(String name) {
+    return '确定删除 $name 吗？该操作无法撤销。';
+  }
+
+  @override
+  String terminalSidebarFilesDownloadSuccess(String path) {
+    return '已保存到 $path';
+  }
+
+  @override
+  String terminalSidebarFilesDownloadFailure(String error) {
+    return '下载失败：$error';
+  }
+
+  @override
+  String terminalSidebarFilesUploadSuccess(String name) {
+    return '已上传 $name';
+  }
+
+  @override
+  String terminalSidebarFilesUploadFailure(String error) {
+    return '上传失败：$error';
+  }
 
   @override
   String get terminalSidebarHistoryPlaceholder => '暂无历史记录';

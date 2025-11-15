@@ -2,6 +2,7 @@
   "@@locale": "en",
   "appTitle": "STerminal",
   "commonCancel": "Cancel",
+  "commonConfirm": "Confirm",
   "commonDelete": "Delete",
   "connectionsTitle": "Connections",
   "connectionsNewHost": "New host",
@@ -229,6 +230,64 @@
   },
   "terminalSidebarFilesRefresh": "Reload",
   "terminalSidebarFilesUp": "Parent folder",
+  "terminalSidebarFilesRefreshSuccess": "Refreshed",
+  "terminalSidebarFilesNewFile": "New file",
+  "terminalSidebarFilesNewFolder": "New folder",
+  "terminalSidebarFilesRename": "Rename",
+  "terminalSidebarFilesDownload": "Download",
+  "terminalSidebarFilesUpload": "Upload",
+  "terminalSidebarFilesDelete": "Delete",
+  "terminalSidebarFilesNewFilePrompt": "Enter a file name",
+  "terminalSidebarFilesNewFolderPrompt": "Enter a folder name",
+  "terminalSidebarFilesRenamePrompt": "Rename {name}",
+  "@terminalSidebarFilesRenamePrompt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "terminalSidebarFilesDeleteTitle": "Delete item",
+  "terminalSidebarFilesDeleteConfirm": "Delete {name}? This cannot be undone.",
+  "@terminalSidebarFilesDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "terminalSidebarFilesDownloadSuccess": "Saved to {path}",
+  "@terminalSidebarFilesDownloadSuccess": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "terminalSidebarFilesDownloadFailure": "Download failed: {error}",
+  "@terminalSidebarFilesDownloadFailure": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "terminalSidebarFilesUploadSuccess": "Uploaded {name}",
+  "@terminalSidebarFilesUploadSuccess": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "terminalSidebarFilesUploadFailure": "Upload failed: {error}",
+  "@terminalSidebarFilesUploadFailure": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "terminalSidebarHistoryPlaceholder": "No history yet.",
   "terminalCredentialDeleted": "Credential deleted",
   "terminalCredentialError": "Credential error: {error}",

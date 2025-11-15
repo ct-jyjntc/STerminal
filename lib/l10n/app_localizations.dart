@@ -110,6 +110,12 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get commonCancel;
 
+  /// No description provided for @commonConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get commonConfirm;
+
   /// No description provided for @commonDelete.
   ///
   /// In en, this message translates to:
@@ -841,6 +847,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Parent folder'**
   String get terminalSidebarFilesUp;
+
+  /// No description provided for @terminalSidebarFilesRefreshSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Refreshed'**
+  String get terminalSidebarFilesRefreshSuccess;
+
+  /// No description provided for @terminalSidebarFilesNewFile.
+  ///
+  /// In en, this message translates to:
+  /// **'New file'**
+  String get terminalSidebarFilesNewFile;
+
+  /// No description provided for @terminalSidebarFilesNewFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'New folder'**
+  String get terminalSidebarFilesNewFolder;
+
+  /// No description provided for @terminalSidebarFilesRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get terminalSidebarFilesRename;
+
+  /// No description provided for @terminalSidebarFilesDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get terminalSidebarFilesDownload;
+
+  /// No description provided for @terminalSidebarFilesUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload'**
+  String get terminalSidebarFilesUpload;
+
+  /// No description provided for @terminalSidebarFilesDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get terminalSidebarFilesDelete;
+
+  /// No description provided for @terminalSidebarFilesNewFilePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a file name'**
+  String get terminalSidebarFilesNewFilePrompt;
+
+  /// No description provided for @terminalSidebarFilesNewFolderPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a folder name'**
+  String get terminalSidebarFilesNewFolderPrompt;
+
+  /// No description provided for @terminalSidebarFilesRenamePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename {name}'**
+  String terminalSidebarFilesRenamePrompt(String name);
+
+  /// No description provided for @terminalSidebarFilesDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete item'**
+  String get terminalSidebarFilesDeleteTitle;
+
+  /// No description provided for @terminalSidebarFilesDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name}? This cannot be undone.'**
+  String terminalSidebarFilesDeleteConfirm(String name);
+
+  /// No description provided for @terminalSidebarFilesDownloadSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to {path}'**
+  String terminalSidebarFilesDownloadSuccess(String path);
+
+  /// No description provided for @terminalSidebarFilesDownloadFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed: {error}'**
+  String terminalSidebarFilesDownloadFailure(String error);
+
+  /// No description provided for @terminalSidebarFilesUploadSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded {name}'**
+  String terminalSidebarFilesUploadSuccess(String name);
+
+  /// No description provided for @terminalSidebarFilesUploadFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload failed: {error}'**
+  String terminalSidebarFilesUploadFailure(String error);
 
   /// No description provided for @terminalSidebarHistoryPlaceholder.
   ///

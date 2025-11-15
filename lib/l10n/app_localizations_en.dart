@@ -15,6 +15,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonCancel => 'Cancel';
 
   @override
+  String get commonConfirm => 'Confirm';
+
+  @override
   String get commonDelete => 'Delete';
 
   @override
@@ -421,6 +424,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get terminalSidebarFilesUp => 'Parent folder';
+
+  @override
+  String get terminalSidebarFilesRefreshSuccess => 'Refreshed';
+
+  @override
+  String get terminalSidebarFilesNewFile => 'New file';
+
+  @override
+  String get terminalSidebarFilesNewFolder => 'New folder';
+
+  @override
+  String get terminalSidebarFilesRename => 'Rename';
+
+  @override
+  String get terminalSidebarFilesDownload => 'Download';
+
+  @override
+  String get terminalSidebarFilesUpload => 'Upload';
+
+  @override
+  String get terminalSidebarFilesDelete => 'Delete';
+
+  @override
+  String get terminalSidebarFilesNewFilePrompt => 'Enter a file name';
+
+  @override
+  String get terminalSidebarFilesNewFolderPrompt => 'Enter a folder name';
+
+  @override
+  String terminalSidebarFilesRenamePrompt(String name) {
+    return 'Rename $name';
+  }
+
+  @override
+  String get terminalSidebarFilesDeleteTitle => 'Delete item';
+
+  @override
+  String terminalSidebarFilesDeleteConfirm(String name) {
+    return 'Delete $name? This cannot be undone.';
+  }
+
+  @override
+  String terminalSidebarFilesDownloadSuccess(String path) {
+    return 'Saved to $path';
+  }
+
+  @override
+  String terminalSidebarFilesDownloadFailure(String error) {
+    return 'Download failed: $error';
+  }
+
+  @override
+  String terminalSidebarFilesUploadSuccess(String name) {
+    return 'Uploaded $name';
+  }
+
+  @override
+  String terminalSidebarFilesUploadFailure(String error) {
+    return 'Upload failed: $error';
+  }
 
   @override
   String get terminalSidebarHistoryPlaceholder => 'No history yet.';

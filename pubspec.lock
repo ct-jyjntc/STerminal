@@ -92,10 +92,9 @@ packages:
   desktop_multi_window:
     dependency: "direct main"
     description:
-      name: desktop_multi_window
-      sha256: "60ba38725b8887b60e44d15afdcf0c3813568b5da2ccaf1e7f6fd09a380a6e24"
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/desktop_multi_window_patched"
+      relative: true
+    source: path
     version: "0.3.0"
   equatable:
     dependency: transitive

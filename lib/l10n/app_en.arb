@@ -308,6 +308,7 @@
       }
     }
   },
+  "terminalSidebarFilesPathHint": "Enter path",
   "terminalSidebarFilesPreviewUnsupported": "Only text files can be previewed.",
   "terminalSidebarHistoryTitle": "History",
   "terminalSidebarHistoryEmpty": "No commands yet.",

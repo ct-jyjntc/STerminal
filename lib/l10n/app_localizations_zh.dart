@@ -501,6 +501,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get terminalSidebarFilesPathHint => '输入路径';
+
+  @override
   String get terminalSidebarFilesPreviewUnsupported => '仅支持预览文本文件';
 
   @override

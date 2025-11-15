@@ -41,6 +41,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   SftpClient? _sftp;
   String _rootDirectory = '';
   String _currentDirectory = '';
+  late final TextEditingController _pathController;
   List<_FileNode> _fileTree = const <_FileNode>[];
   Set<String> _loadingPaths = <String>{};
   bool _initialFileLoading = false;
@@ -61,6 +62,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     super.initState();
     _historyService = ref.read(commandHistoryServiceProvider);
     _loadHistory();
+    _pathController = TextEditingController();
     _terminal = Terminal(
       maxLines: 10000,
       platform: TerminalTargetPlatform.macos,
@@ -74,6 +76,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     _session?.close();
     _client?.close();
     _sftp?.close();
+    _pathController.dispose();
     _terminalController.dispose();
     super.dispose();
   }
@@ -278,7 +281,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       _error = null;
       _sftp = null;
       _rootDirectory = '';
-      _currentDirectory = '';
+      _updateCurrentDirectory('');
       _fileTree = const <_FileNode>[];
       _fileError = null;
       _loadingPaths = <String>{};
@@ -497,11 +500,28 @@ Widget _buildSidebarContentWithContextMenu(
           child: Row(
             children: [
               Expanded(
-                child: Text(
-                  hasPath ? _currentDirectory : '',
-                  style: Theme.of(context).textTheme.bodyMedium,
+                child: TextField(
+                  controller: _pathController,
+                  enabled: !isRefreshing,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    hintText: l10n.terminalSidebarFiles,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8,
+                    ),
+                  ),
+                  onSubmitted: (value) {
+                    final trimmed = value.trim();
+                    if (trimmed.isEmpty || isRefreshing) return;
+                    _loadDirectory(trimmed);
+                  },
                 ),
               ),
+              const SizedBox(width: 8),
               IconButton(
                 icon: const Icon(Icons.refresh),
                 tooltip: l10n.terminalSidebarFilesRefresh,
@@ -618,7 +638,7 @@ Widget _buildSidebarContentWithContextMenu(
           },
           onContextMenu: (position) {
             _entryContextMenuActive = true;
-            _currentDirectory = node.isDir ? node.path : parentPath;
+            _updateCurrentDirectory(node.isDir ? node.path : parentPath);
             _showFileContextMenu(
               context,
               position,
@@ -682,7 +702,7 @@ Widget _buildSidebarContentWithContextMenu(
       setState(() {
         _sftp = sftp;
         _rootDirectory = rootPath;
-        _currentDirectory = rootPath;
+        _updateCurrentDirectory(rootPath);
         _fileTree = const <_FileNode>[];
         _fileError = null;
         _loadingPaths = {rootPath};
@@ -693,7 +713,7 @@ Widget _buildSidebarContentWithContextMenu(
         // Fallback to the user's home directory if root is not accessible.
         setState(() {
           _rootDirectory = homePath;
-          _currentDirectory = homePath;
+          _updateCurrentDirectory(homePath);
           _fileTree = const <_FileNode>[];
           _fileError = null;
           _loadingPaths = {homePath};
@@ -715,7 +735,7 @@ Widget _buildSidebarContentWithContextMenu(
     if (sftp == null) return false;
     final l10n = context.l10n;
     setState(() {
-      if (setCurrent) _currentDirectory = path;
+      if (setCurrent) _updateCurrentDirectory(path);
       _fileError = null;
       _loadingPaths = {..._loadingPaths, path};
       _fileTree = _updateNode(
@@ -906,12 +926,17 @@ Widget _buildSidebarContentWithContextMenu(
     return '${size.toStringAsFixed(unitIndex == 0 ? 0 : 1)} ${units[unitIndex]}';
   }
 
+  void _updateCurrentDirectory(String path) {
+    _currentDirectory = path;
+    _pathController.text = path;
+  }
+
   Future<void> _toggleDirectory(_FileNode node) async {
     if (!_ensureSftpReady()) return;
     final shouldExpand = !node.isExpanded;
     if (shouldExpand) {
       setState(() {
-        _currentDirectory = node.path;
+        _updateCurrentDirectory(node.path);
         _fileTree = _updateNode(
           _fileTree,
           node.path,
@@ -926,7 +951,7 @@ Widget _buildSidebarContentWithContextMenu(
       await _loadDirectory(node.path, setCurrent: false);
     } else {
       setState(() {
-        _currentDirectory = node.path;
+        _updateCurrentDirectory(node.path);
         _fileTree = _updateNode(
           _fileTree,
           node.path,

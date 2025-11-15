@@ -980,6 +980,12 @@ abstract class AppLocalizations {
   /// **'Failed to open file: {error}'**
   String terminalSidebarFilesEditFailure(String error);
 
+  /// No description provided for @terminalSidebarFilesPathHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter path'**
+  String get terminalSidebarFilesPathHint;
+
   /// No description provided for @terminalSidebarFilesPreviewUnsupported.
   ///
   /// In en, this message translates to:

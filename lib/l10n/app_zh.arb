@@ -217,6 +217,7 @@
       }
     }
   },
+  "terminalSidebarFilesPathHint": "输入路径",
   "terminalSidebarFilesPreviewUnsupported": "仅支持预览文本文件",
   "terminalSidebarHistoryTitle": "历史命令",
   "terminalSidebarHistoryEmpty": "暂无命令",

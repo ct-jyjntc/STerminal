@@ -509,6 +509,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get terminalSidebarFilesPathHint => 'Enter path';
+
+  @override
   String get terminalSidebarFilesPreviewUnsupported =>
       'Only text files can be previewed.';
 

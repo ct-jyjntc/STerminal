@@ -345,8 +345,8 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   }
 
   void _handleTerminalInput(String data) {
-    for (final codeUnit in data.codeUnits) {
-      if (codeUnit == 13 || codeUnit == 10) {
+    for (final codePoint in data.runes) {
+      if (codePoint == 13 || codePoint == 10) {
         final command = _commandBuffer.toString().trim();
         _commandBuffer.clear();
         if (command.isNotEmpty) {
@@ -366,15 +366,15 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
           });
           _historyService.save(history);
         }
-      } else if (codeUnit == 127 || codeUnit == 8) {
+      } else if (codePoint == 127 || codePoint == 8) {
         if (_commandBuffer.isNotEmpty) {
           final text = _commandBuffer.toString();
           _commandBuffer
             ..clear()
             ..write(text.substring(0, text.length - 1));
         }
-      } else if (codeUnit >= 32 && codeUnit < 127) {
-        _commandBuffer.writeCharCode(codeUnit);
+      } else if (codePoint >= 32) {
+        _commandBuffer.write(String.fromCharCode(codePoint));
       }
     }
   }

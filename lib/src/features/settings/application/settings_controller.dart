@@ -12,25 +12,30 @@ class SettingsState {
   const SettingsState({
     required this.themeMode,
     required this.confirmBeforeConnect,
+    this.downloadDirectory,
   });
 
   final ThemeMode themeMode;
   final bool confirmBeforeConnect;
+  final String? downloadDirectory;
 
   SettingsState copyWith({
     ThemeMode? themeMode,
     bool? confirmBeforeConnect,
+    String? downloadDirectory,
   }) {
     return SettingsState(
       themeMode: themeMode ?? this.themeMode,
       confirmBeforeConnect:
           confirmBeforeConnect ?? this.confirmBeforeConnect,
+      downloadDirectory: downloadDirectory ?? this.downloadDirectory,
     );
   }
 
   Map<String, dynamic> toJson() => {
         'themeMode': themeMode.name,
         'confirmBeforeConnect': confirmBeforeConnect,
+        'downloadDirectory': downloadDirectory,
       };
 
   factory SettingsState.fromJson(Map<String, dynamic> json) {
@@ -39,12 +44,14 @@ class SettingsState {
       themeMode: ThemeMode.values
           .firstWhere((mode) => mode.name == themeName, orElse: () => ThemeMode.dark),
       confirmBeforeConnect: json['confirmBeforeConnect'] as bool? ?? true,
+      downloadDirectory: json['downloadDirectory'] as String?,
     );
   }
 
   static SettingsState defaults() => const SettingsState(
         themeMode: ThemeMode.dark,
         confirmBeforeConnect: true,
+        downloadDirectory: null,
       );
 }
 
@@ -68,6 +75,11 @@ class SettingsController extends StateNotifier<SettingsState> {
 
   void toggleConfirmation(bool value) {
     state = state.copyWith(confirmBeforeConnect: value);
+    _persist();
+  }
+
+  void setDownloadDirectory(String? path) {
+    state = state.copyWith(downloadDirectory: path);
     _persist();
   }
 

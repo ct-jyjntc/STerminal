@@ -197,6 +197,10 @@
       }
     }
   },
+  "settingsDownloadPath": "下载位置",
+  "settingsDownloadPathUnset": "未设置",
+  "settingsDownloadPathChoose": "选择文件夹",
+  "settingsDownloadPathClear": "清除",
   "terminalSidebarHistoryPlaceholder": "暂无历史记录",
   "terminalCredentialDeleted": "凭证已删除",
   "terminalCredentialError": "凭证错误：{error}",

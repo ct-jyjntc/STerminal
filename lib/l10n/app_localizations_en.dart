@@ -486,6 +486,18 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get settingsDownloadPath => 'Download folder';
+
+  @override
+  String get settingsDownloadPathUnset => 'Not set';
+
+  @override
+  String get settingsDownloadPathChoose => 'Choose folder';
+
+  @override
+  String get settingsDownloadPathClear => 'Clear';
+
+  @override
   String get terminalSidebarHistoryPlaceholder => 'No history yet.';
 
   @override

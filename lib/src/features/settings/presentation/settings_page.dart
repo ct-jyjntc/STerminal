@@ -1,3 +1,4 @@
+import 'package:file_selector/file_selector.dart' as file_selector;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sterminal/src/l10n/l10n.dart';
@@ -77,9 +78,38 @@ class SettingsPage extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 12),
+            ListItemCard(
+              leading: l10n.settingsDownloadPath.characters.first.toUpperCase(),
+              accentColor: Theme.of(context).colorScheme.secondary,
+              title: l10n.settingsDownloadPath,
+              subtitle: (settings.downloadDirectory?.isNotEmpty ?? false)
+                  ? settings.downloadDirectory!
+                  : l10n.settingsDownloadPathUnset,
+              actions: [
+                if (settings.downloadDirectory?.isNotEmpty ?? false)
+                  IconButton(
+                    tooltip: l10n.settingsDownloadPathClear,
+                    onPressed: () => controller.setDownloadDirectory(null),
+                    icon: const Icon(Icons.close),
+                  ),
+                FilledButton.icon(
+                  onPressed: () => _pickDownloadDirectory(controller),
+                  icon: const Icon(Icons.folder_open),
+                  label: Text(l10n.settingsDownloadPathChoose),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _pickDownloadDirectory(
+    SettingsController controller,
+  ) async {
+    final selected = await file_selector.getDirectoryPath();
+    controller.setDownloadDirectory(selected);
   }
 }

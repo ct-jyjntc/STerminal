@@ -944,6 +944,30 @@ abstract class AppLocalizations {
   /// **'Upload failed: {error}'**
   String terminalSidebarFilesUploadFailure(String error);
 
+  /// No description provided for @settingsDownloadPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Download folder'**
+  String get settingsDownloadPath;
+
+  /// No description provided for @settingsDownloadPathUnset.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get settingsDownloadPathUnset;
+
+  /// No description provided for @settingsDownloadPathChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose folder'**
+  String get settingsDownloadPathChoose;
+
+  /// No description provided for @settingsDownloadPathClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get settingsDownloadPathClear;
+
   /// No description provided for @terminalSidebarHistoryPlaceholder.
   ///
   /// In en, this message translates to:

@@ -16,6 +16,7 @@ import '../../../domain/models/credential.dart';
 import '../../../domain/models/host.dart';
 import '../../../domain/models/snippet.dart';
 import '../../connections/application/hosts_providers.dart';
+import '../../settings/application/settings_controller.dart';
 import '../../snippets/application/snippet_providers.dart';
 import '../../snippets/presentation/snippet_form_sheet.dart';
 import '../../vault/application/credential_providers.dart';
@@ -605,6 +606,16 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     return result == '//' ? '/$child' : '$result$child';
   }
 
+  String _joinLocalPath(String base, String child) {
+    if (base.isEmpty) return child;
+    final separator = Platform.pathSeparator;
+    var normalized = base;
+    if (!normalized.endsWith(separator)) {
+      normalized += separator;
+    }
+    return '$normalized$child';
+  }
+
   String _formatFileSize(int bytes) {
     const units = ['B', 'KB', 'MB', 'GB', 'TB'];
     double size = bytes.toDouble();
@@ -799,20 +810,29 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     final sftp = _sftp;
     if (sftp == null) return;
     final l10n = context.l10n;
-    final saveLocation = await file_selector.getSaveLocation(
-      suggestedName: entry.filename,
-    );
-    if (saveLocation == null) return;
-    final path = _joinPath(_currentDirectory, entry.filename);
+    final settings = ref.read(settingsControllerProvider);
+    String? targetPath;
+    if (settings.downloadDirectory?.isNotEmpty ?? false) {
+      targetPath =
+          _joinLocalPath(settings.downloadDirectory!, entry.filename);
+    } else {
+      final saveLocation = await file_selector.getSaveLocation(
+        suggestedName: entry.filename,
+      );
+      if (saveLocation == null) return;
+      targetPath = saveLocation.path;
+    }
+    final remotePath = _joinPath(_currentDirectory, entry.filename);
     try {
-      final file = await sftp.open(path, mode: SftpFileOpenMode.read);
+      final file = await sftp.open(remotePath, mode: SftpFileOpenMode.read);
       final bytes = await file.readBytes();
       await file.close();
-      final output = File(saveLocation.path);
+      final output = File(targetPath);
+      await output.parent.create(recursive: true);
       await output.writeAsBytes(bytes);
       if (!mounted) return;
       _showSnackBarMessage(
-        l10n.terminalSidebarFilesDownloadSuccess(saveLocation.path),
+        l10n.terminalSidebarFilesDownloadSuccess(targetPath),
       );
     } catch (error) {
       if (!mounted) return;

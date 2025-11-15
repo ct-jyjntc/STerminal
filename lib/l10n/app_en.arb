@@ -288,6 +288,10 @@
       }
     }
   },
+  "settingsDownloadPath": "Download folder",
+  "settingsDownloadPathUnset": "Not set",
+  "settingsDownloadPathChoose": "Choose folder",
+  "settingsDownloadPathClear": "Clear",
   "terminalSidebarHistoryPlaceholder": "No history yet.",
   "terminalCredentialDeleted": "Credential deleted",
   "terminalCredentialError": "Credential error: {error}",

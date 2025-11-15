@@ -479,6 +479,18 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get settingsDownloadPath => '下载位置';
+
+  @override
+  String get settingsDownloadPathUnset => '未设置';
+
+  @override
+  String get settingsDownloadPathChoose => '选择文件夹';
+
+  @override
+  String get settingsDownloadPathClear => '清除';
+
+  @override
   String get terminalSidebarHistoryPlaceholder => '暂无历史记录';
 
   @override

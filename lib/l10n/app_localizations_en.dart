@@ -21,6 +21,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonDelete => 'Delete';
 
   @override
+  String get commonSearch => 'Search';
+
+  @override
+  String get commonPrevious => 'Previous';
+
+  @override
+  String get commonNext => 'Next';
+
+  @override
+  String get commonReplace => 'Replace';
+
+  @override
+  String get commonReplaceAll => 'Replace all';
+
+  @override
   String get connectionsTitle => 'Connections';
 
   @override

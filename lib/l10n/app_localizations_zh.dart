@@ -21,6 +21,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonDelete => '删除';
 
   @override
+  String get commonSearch => '搜索';
+
+  @override
+  String get commonPrevious => '上一个';
+
+  @override
+  String get commonNext => '下一个';
+
+  @override
+  String get commonReplace => '替换';
+
+  @override
+  String get commonReplaceAll => '全部替换';
+
+  @override
   String get connectionsTitle => '连接';
 
   @override

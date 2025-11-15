@@ -42,6 +42,9 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   String _rootDirectory = '';
   String _currentDirectory = '';
   late final TextEditingController _pathController;
+  final ScrollController _editorScrollController = ScrollController();
+  final GlobalKey<EditableTextState> _editorFieldKey =
+      GlobalKey<EditableTextState>();
   List<_FileNode> _fileTree = const <_FileNode>[];
   Set<String> _loadingPaths = <String>{};
   bool _initialFileLoading = false;
@@ -77,6 +80,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     _client?.close();
     _sftp?.close();
     _pathController.dispose();
+    _editorScrollController.dispose();
     _terminalController.dispose();
     super.dispose();
   }
@@ -1284,51 +1288,22 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       await file.close();
       final text = utf8.decode(bytes, allowMalformed: true);
       if (!mounted) return;
-      await showDialog<void>(
+      await _showFileEditor(
         context: context,
-        builder: (dialogContext) {
-          final controller = TextEditingController(text: text);
-          return AlertDialog(
-            contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            title: Text(entry.filename),
-            content: SizedBox(
-              width: 600,
-              child: TextField(
-                controller: controller,
-                maxLines: 24,
-                decoration: InputDecoration(
-                  hintText: l10n.terminalSidebarFilesEditHint,
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: Text(l10n.commonCancel),
-              ),
-                FilledButton(
-                  onPressed: () async {
-                    final newText = controller.text;
-                    final data = Uint8List.fromList(utf8.encode(newText));
-                    final writer = await sftp.open(
-                    remotePath,
-                    mode: SftpFileOpenMode.write |
-                        SftpFileOpenMode.truncate |
-                        SftpFileOpenMode.create,
-                  );
-                  await writer.writeBytes(data);
-                  await writer.close();
-                  if (!mounted) return;
-                  if (dialogContext.mounted) {
-                    Navigator.of(dialogContext).pop();
-                  }
-                  _showSnackBarMessage(
-                    l10n.terminalSidebarFilesSaveSuccess(entry.filename),
-                  );
-                },
-                child: Text(l10n.terminalSidebarFilesSave),
-              ),
-            ],
+        filename: entry.filename,
+        initialText: text,
+        onSave: (newText) async {
+          final data = Uint8List.fromList(utf8.encode(newText));
+          final writer = await sftp.open(
+            remotePath,
+            mode: SftpFileOpenMode.write |
+                SftpFileOpenMode.truncate |
+                SftpFileOpenMode.create,
+          );
+          await writer.writeBytes(data);
+          await writer.close();
+          _showSnackBarMessage(
+            l10n.terminalSidebarFilesSaveSuccess(entry.filename),
           );
         },
       );
@@ -1386,6 +1361,435 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _showFileEditor({
+    required BuildContext context,
+    required String filename,
+    required String initialText,
+    required Future<void> Function(String text) onSave,
+  }) {
+    final editorController = TextEditingController(text: initialText);
+    final searchController = TextEditingController();
+    final replaceController = TextEditingController();
+    final editorFocusNode = FocusNode();
+    final searchFocusNode = FocusNode();
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        bool saving = false;
+        bool showFindReplace = false;
+        int currentMatch = 0;
+        List<TextRange> matches = const [];
+
+        void updateMatches({bool keepIndex = false}) {
+          final query = searchController.text;
+          final text = editorController.text;
+          final newMatches = <TextRange>[];
+          if (query.isNotEmpty) {
+            var start = 0;
+            while (true) {
+              final index = text.indexOf(query, start);
+              if (index < 0) break;
+              newMatches.add(TextRange(start: index, end: index + query.length));
+              start = index + query.length;
+            }
+          }
+          matches = newMatches;
+          if (matches.isEmpty) {
+            currentMatch = 0;
+            return;
+          }
+          if (!keepIndex || currentMatch >= matches.length) {
+            currentMatch = 0;
+          }
+        }
+
+        void jumpToRange(TextRange range) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final state = _editorFieldKey.currentState;
+            state?.bringIntoView(TextPosition(offset: range.start));
+          });
+        }
+
+        void selectMatch(
+          int index,
+          StateSetter setState, {
+          bool focusEditor = true,
+        }) {
+          if (matches.isEmpty) return;
+          final clamped = index.clamp(0, matches.length - 1);
+          currentMatch = clamped;
+          setState(() {});
+          final range = matches[clamped];
+          editorController.selection =
+              TextSelection(baseOffset: range.start, extentOffset: range.end);
+          if (focusEditor) {
+            editorFocusNode.requestFocus();
+            jumpToRange(range);
+          }
+        }
+
+        Future<void> replaceCurrent(StateSetter setState) async {
+          if (matches.isEmpty || searchController.text.isEmpty) return;
+          final match = matches[currentMatch];
+          final replacement = replaceController.text;
+          final text = editorController.text;
+          editorController.text = text.replaceRange(
+            match.start,
+            match.end,
+            replacement,
+          );
+          final newCursor = match.start + replacement.length;
+          editorController.selection =
+              TextSelection.collapsed(offset: newCursor);
+          updateMatches();
+          if (matches.isNotEmpty) {
+            selectMatch(
+              currentMatch >= matches.length ? matches.length - 1 : currentMatch,
+              setState,
+            );
+          } else {
+            setState(() {});
+          }
+        }
+
+        Future<void> replaceAll(StateSetter setState) async {
+          final query = searchController.text;
+          if (query.isEmpty) return;
+          final replacement = replaceController.text;
+          final text = editorController.text.replaceAll(query, replacement);
+          editorController.text = text;
+          editorController.selection = TextSelection.collapsed(
+            offset: (text.length).clamp(0, text.length),
+          );
+          updateMatches();
+          setState(() {});
+        }
+
+        updateMatches();
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final totalMatches = matches.length;
+            final matchLabel = totalMatches == 0
+                ? '0/0'
+                : '${currentMatch + 1}/$totalMatches';
+            return CallbackShortcuts(
+              bindings: {
+                const SingleActivator(LogicalKeyboardKey.keyF, meta: true):
+                    () {
+                  setState(() {
+                    showFindReplace = true;
+                    updateMatches();
+                  });
+                  Future.microtask(() => searchFocusNode.requestFocus());
+                },
+                const SingleActivator(LogicalKeyboardKey.keyF, control: true):
+                    () {
+                  setState(() {
+                    showFindReplace = true;
+                    updateMatches();
+                  });
+                  Future.microtask(() => searchFocusNode.requestFocus());
+                },
+                const SingleActivator(LogicalKeyboardKey.escape): () {
+                  if (showFindReplace) {
+                    setState(() {
+                      showFindReplace = false;
+                      searchController.clear();
+                      replaceController.clear();
+                      matches = const [];
+                      currentMatch = 0;
+                    });
+                    editorFocusNode.requestFocus();
+                  } else {
+                    Navigator.of(dialogContext).pop();
+                  }
+                },
+              },
+              child: Dialog(
+                insetPadding: const EdgeInsets.all(16),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: 1080,
+                    maxHeight: 820,
+                    minWidth: 720,
+                    minHeight: 480,
+                  ),
+                  child: Stack(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    filename,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                IconButton(
+                                  tooltip: MaterialLocalizations.of(context)
+                                      .closeButtonTooltip,
+                                  icon: const Icon(Icons.close),
+                                  onPressed: saving
+                                      ? null
+                                      : () {
+                                          Navigator.of(dialogContext).pop();
+                                        },
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: TextField(
+                                key: _editorFieldKey,
+                                focusNode: editorFocusNode,
+                                controller: editorController,
+                                scrollController: _editorScrollController,
+                                expands: true,
+                                maxLines: null,
+                                minLines: null,
+                                keyboardType: TextInputType.multiline,
+                                style: const TextStyle(
+                                  fontFamily: 'monospace',
+                                  height: 1.25,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText:
+                                      context.l10n.terminalSidebarFilesEditHint,
+                                  border: const OutlineInputBorder(),
+                                  contentPadding: const EdgeInsets.fromLTRB(
+                                      12, 12, 12, 12),
+                                ),
+                                onChanged: (_) {
+                                  if (showFindReplace) {
+                                    updateMatches(keepIndex: true);
+                                    setState(() {});
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                          const Divider(height: 1),
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                              children: [
+                                Text(
+                                  context.l10n.terminalSidebarFilesEditHint,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                          color: Theme.of(context).hintColor),
+                                ),
+                                const Spacer(),
+                                TextButton(
+                                  onPressed: saving
+                                      ? null
+                                      : () => Navigator.of(dialogContext).pop(),
+                                  child: Text(context.l10n.commonCancel),
+                                ),
+                                const SizedBox(width: 8),
+                                FilledButton.icon(
+                                  onPressed: saving
+                                      ? null
+                                      : () async {
+                                          setState(() => saving = true);
+                                          try {
+                                            await onSave(editorController.text);
+                                            if (dialogContext.mounted) {
+                                              Navigator.of(dialogContext).pop();
+                                            }
+                                          } catch (error) {
+                                            if (dialogContext.mounted) {
+                                              ScaffoldMessenger.of(dialogContext)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    context.l10n
+                                                        .terminalSidebarFilesEditFailure(
+                                                            '$error'),
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          } finally {
+                                            if (dialogContext.mounted) {
+                                              setState(() => saving = false);
+                                            }
+                                          }
+                                        },
+                                  icon: saving
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : const Icon(Icons.save),
+                                  label:
+                                      Text(context.l10n.terminalSidebarFilesSave),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (showFindReplace)
+                        Positioned(
+                          top: 12,
+                          right: 12,
+                          child: Material(
+                            elevation: 4,
+                            borderRadius: BorderRadius.circular(8),
+                            color: Theme.of(context).colorScheme.surface,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Wrap(
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  SizedBox(
+                                    width: 200,
+                                    child: TextField(
+                                      focusNode: searchFocusNode,
+                                      controller: searchController,
+                                      decoration: InputDecoration(
+                                        isDense: true,
+                                        labelText: context.l10n.commonSearch,
+                                        border: const OutlineInputBorder(),
+                                      ),
+                                  onChanged: (_) {
+                                    updateMatches();
+                                    if (matches.isNotEmpty) {
+                                      selectMatch(
+                                        currentMatch,
+                                        setState,
+                                        focusEditor: false,
+                                      );
+                                    } else {
+                                      setState(() {});
+                                    }
+                                  },
+                                ),
+                              ),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        tooltip: context.l10n.commonPrevious,
+                                      onPressed: matches.isEmpty
+                                          ? null
+                                          : () {
+                                                selectMatch(
+                                                  (currentMatch - 1 +
+                                                          matches.length) %
+                                                      matches.length,
+                                                  setState,
+                                                  focusEditor: true,
+                                                );
+                                              },
+                                        icon: const Icon(Icons.keyboard_arrow_up),
+                                      ),
+                                      IconButton(
+                                        tooltip: context.l10n.commonNext,
+                                      onPressed: matches.isEmpty
+                                          ? null
+                                          : () {
+                                                selectMatch(
+                                                  (currentMatch + 1) %
+                                                      matches.length,
+                                                  setState,
+                                                  focusEditor: true,
+                                                );
+                                              },
+                                        icon:
+                                            const Icon(Icons.keyboard_arrow_down),
+                                      ),
+                                      Text(
+                                        matchLabel,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                                color:
+                                                    Theme.of(context).hintColor),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    width: 200,
+                                    child: TextField(
+                                      controller: replaceController,
+                                      decoration: InputDecoration(
+                                        isDense: true,
+                                        labelText: context.l10n.commonReplace,
+                                        border: const OutlineInputBorder(),
+                                      ),
+                                    ),
+                                  ),
+                                  FilledButton(
+                                    onPressed: matches.isEmpty
+                                        ? null
+                                        : () => replaceCurrent(setState),
+                                    child: Text(context.l10n.commonReplace),
+                                  ),
+                                  OutlinedButton(
+                                    onPressed: matches.isEmpty
+                                        ? null
+                                        : () => replaceAll(setState),
+                                    child: Text(context.l10n.commonReplaceAll),
+                                  ),
+                                  IconButton(
+                                    tooltip: MaterialLocalizations.of(context)
+                                        .closeButtonTooltip,
+                                    onPressed: () {
+                                      setState(() {
+                                        showFindReplace = false;
+                                        searchController.clear();
+                                        replaceController.clear();
+                                        matches = const [];
+                                        currentMatch = 0;
+                                      });
+                                      editorFocusNode.requestFocus();
+                                    },
+                                    icon: const Icon(Icons.close),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    ).whenComplete(() {
+      editorController.dispose();
+      searchController.dispose();
+      replaceController.dispose();
+      editorFocusNode.dispose();
+      searchFocusNode.dispose();
+    });
   }
 }
 

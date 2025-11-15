@@ -15,6 +15,7 @@ class MainFlutterWindow: NSWindow {
     let minimumSize = NSSize(width: 900, height: 600)
     self.setContentSize(preferredSize)
     self.minSize = minimumSize
+    self.maxSize = NSSize(width: 2600, height: 1800)
 
     if let screenFrame = NSScreen.main?.visibleFrame {
       let originX = screenFrame.origin.x + (screenFrame.size.width - preferredSize.width) / 2
@@ -34,6 +35,8 @@ class MainFlutterWindow: NSWindow {
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         window.styleMask.insert(.fullSizeContentView)
+        window.minSize = minimumSize
+        window.maxSize = NSSize(width: 2600, height: 1800)
         if let strongSelf = self {
           let baseFrame = strongSelf.frame
           let offsetX: CGFloat = 40

@@ -122,6 +122,36 @@ abstract class AppLocalizations {
   /// **'Delete'**
   String get commonDelete;
 
+  /// No description provided for @commonSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get commonSearch;
+
+  /// No description provided for @commonPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get commonPrevious;
+
+  /// No description provided for @commonNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get commonNext;
+
+  /// No description provided for @commonReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get commonReplace;
+
+  /// No description provided for @commonReplaceAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace all'**
+  String get commonReplaceAll;
+
   /// No description provided for @connectionsTitle.
   ///
   /// In en, this message translates to:

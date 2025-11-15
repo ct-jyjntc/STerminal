@@ -944,6 +944,30 @@ abstract class AppLocalizations {
   /// **'Upload failed: {error}'**
   String terminalSidebarFilesUploadFailure(String error);
 
+  /// No description provided for @terminalSidebarFilesEditHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit file content'**
+  String get terminalSidebarFilesEditHint;
+
+  /// No description provided for @terminalSidebarFilesSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get terminalSidebarFilesSave;
+
+  /// No description provided for @terminalSidebarFilesSaveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved {name}'**
+  String terminalSidebarFilesSaveSuccess(String name);
+
+  /// No description provided for @terminalSidebarFilesEditFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to open file: {error}'**
+  String terminalSidebarFilesEditFailure(String error);
+
   /// No description provided for @settingsDownloadPath.
   ///
   /// In en, this message translates to:

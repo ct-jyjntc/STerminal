@@ -197,6 +197,24 @@
       }
     }
   },
+  "terminalSidebarFilesEditHint": "编辑文件内容",
+  "terminalSidebarFilesSave": "保存",
+  "terminalSidebarFilesSaveSuccess": "已保存 {name}",
+  "@terminalSidebarFilesSaveSuccess": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "terminalSidebarFilesEditFailure": "打开文件失败：{error}",
+  "@terminalSidebarFilesEditFailure": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "settingsDownloadPath": "下载位置",
   "settingsDownloadPathUnset": "未设置",
   "settingsDownloadPathChoose": "选择文件夹",

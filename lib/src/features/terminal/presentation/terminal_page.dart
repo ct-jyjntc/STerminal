@@ -506,7 +506,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
           behavior: HitTestBehavior.opaque,
           onSecondaryTapDown: (details) =>
               _showFileContextMenu(context, details.globalPosition, entry: entry),
-          child: ListTile(
+                          child: ListTile(
             dense: true,
             leading: Icon(isDir ? Icons.folder : Icons.insert_drive_file),
             title: Text(entry.filename),
@@ -516,7 +516,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
             onTap: isDir
                 ? () =>
                     _loadDirectory(_joinPath(_currentDirectory, entry.filename))
-                : null,
+                : () => _openFilePreview(entry),
           ),
         );
       },
@@ -867,6 +867,74 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       if (!mounted) return;
       _showSnackBarMessage(
         l10n.terminalSidebarFilesUploadFailure('$error'),
+      );
+    }
+  }
+
+  Future<void> _openFilePreview(SftpName entry) async {
+    if (_isDirectory(entry)) return;
+    final sftp = _sftp;
+    if (sftp == null) return;
+    final l10n = context.l10n;
+    final remotePath = _joinPath(_currentDirectory, entry.filename);
+    try {
+      final file = await sftp.open(remotePath, mode: SftpFileOpenMode.read);
+      final bytes = await file.readBytes();
+      await file.close();
+      final text = utf8.decode(bytes, allowMalformed: true);
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) {
+          final controller = TextEditingController(text: text);
+          return AlertDialog(
+            contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            title: Text(entry.filename),
+            content: SizedBox(
+              width: 600,
+              child: TextField(
+                controller: controller,
+                maxLines: 24,
+                decoration: InputDecoration(
+                  hintText: l10n.terminalSidebarFilesEditHint,
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(l10n.commonCancel),
+              ),
+                FilledButton(
+                  onPressed: () async {
+                    final newText = controller.text;
+                    final data = Uint8List.fromList(utf8.encode(newText));
+                    final writer = await sftp.open(
+                    remotePath,
+                    mode: SftpFileOpenMode.write |
+                        SftpFileOpenMode.truncate |
+                        SftpFileOpenMode.create,
+                  );
+                  await writer.writeBytes(data);
+                  await writer.close();
+                  if (!mounted) return;
+                  if (dialogContext.mounted) {
+                    Navigator.of(dialogContext).pop();
+                  }
+                  _showSnackBarMessage(
+                    l10n.terminalSidebarFilesSaveSuccess(entry.filename),
+                  );
+                },
+                child: Text(l10n.terminalSidebarFilesSave),
+              ),
+            ],
+          );
+        },
+      );
+    } catch (error) {
+      if (!mounted) return;
+      _showSnackBarMessage(
+        l10n.terminalSidebarFilesEditFailure('$error'),
       );
     }
   }

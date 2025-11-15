@@ -486,6 +486,22 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get terminalSidebarFilesEditHint => 'Edit file content';
+
+  @override
+  String get terminalSidebarFilesSave => 'Save';
+
+  @override
+  String terminalSidebarFilesSaveSuccess(String name) {
+    return 'Saved $name';
+  }
+
+  @override
+  String terminalSidebarFilesEditFailure(String error) {
+    return 'Failed to open file: $error';
+  }
+
+  @override
   String get settingsDownloadPath => 'Download folder';
 
   @override

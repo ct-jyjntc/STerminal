@@ -479,6 +479,22 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get terminalSidebarFilesEditHint => '编辑文件内容';
+
+  @override
+  String get terminalSidebarFilesSave => '保存';
+
+  @override
+  String terminalSidebarFilesSaveSuccess(String name) {
+    return '已保存 $name';
+  }
+
+  @override
+  String terminalSidebarFilesEditFailure(String error) {
+    return '打开文件失败：$error';
+  }
+
+  @override
   String get settingsDownloadPath => '下载位置';
 
   @override

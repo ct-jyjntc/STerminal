@@ -288,6 +288,24 @@
       }
     }
   },
+  "terminalSidebarFilesEditHint": "Edit file content",
+  "terminalSidebarFilesSave": "Save",
+  "terminalSidebarFilesSaveSuccess": "Saved {name}",
+  "@terminalSidebarFilesSaveSuccess": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "terminalSidebarFilesEditFailure": "Failed to open file: {error}",
+  "@terminalSidebarFilesEditFailure": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "settingsDownloadPath": "Download folder",
   "settingsDownloadPathUnset": "Not set",
   "settingsDownloadPathChoose": "Choose folder",

@@ -502,6 +502,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get terminalSidebarFilesPreviewUnsupported =>
+      'Only text files can be previewed.';
+
+  @override
   String get terminalSidebarHistoryTitle => 'History';
 
   @override
@@ -509,6 +513,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get terminalSidebarHistoryClear => 'Clear history';
+
+  @override
+  String get settingsHistoryLimit => 'History limit';
+
+  @override
+  String settingsHistoryLimitSubtitle(int count) {
+    return 'Keep up to $count commands';
+  }
 
   @override
   String get settingsDownloadPath => 'Download folder';

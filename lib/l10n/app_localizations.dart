@@ -968,6 +968,12 @@ abstract class AppLocalizations {
   /// **'Failed to open file: {error}'**
   String terminalSidebarFilesEditFailure(String error);
 
+  /// No description provided for @terminalSidebarFilesPreviewUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Only text files can be previewed.'**
+  String get terminalSidebarFilesPreviewUnsupported;
+
   /// No description provided for @terminalSidebarHistoryTitle.
   ///
   /// In en, this message translates to:
@@ -985,6 +991,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear history'**
   String get terminalSidebarHistoryClear;
+
+  /// No description provided for @settingsHistoryLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'History limit'**
+  String get settingsHistoryLimit;
+
+  /// No description provided for @settingsHistoryLimitSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep up to {count} commands'**
+  String settingsHistoryLimitSubtitle(int count);
 
   /// No description provided for @settingsDownloadPath.
   ///

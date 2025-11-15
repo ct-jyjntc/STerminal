@@ -13,22 +13,26 @@ class SettingsState {
     required this.themeMode,
     required this.confirmBeforeConnect,
     this.downloadDirectory,
+    this.historyLimit = 50,
   });
 
   final ThemeMode themeMode;
   final bool confirmBeforeConnect;
   final String? downloadDirectory;
+  final int historyLimit;
 
   SettingsState copyWith({
     ThemeMode? themeMode,
     bool? confirmBeforeConnect,
     String? downloadDirectory,
+    int? historyLimit,
   }) {
     return SettingsState(
       themeMode: themeMode ?? this.themeMode,
       confirmBeforeConnect:
           confirmBeforeConnect ?? this.confirmBeforeConnect,
       downloadDirectory: downloadDirectory ?? this.downloadDirectory,
+      historyLimit: historyLimit ?? this.historyLimit,
     );
   }
 
@@ -36,6 +40,7 @@ class SettingsState {
         'themeMode': themeMode.name,
         'confirmBeforeConnect': confirmBeforeConnect,
         'downloadDirectory': downloadDirectory,
+        'historyLimit': historyLimit,
       };
 
   factory SettingsState.fromJson(Map<String, dynamic> json) {
@@ -45,6 +50,7 @@ class SettingsState {
           .firstWhere((mode) => mode.name == themeName, orElse: () => ThemeMode.dark),
       confirmBeforeConnect: json['confirmBeforeConnect'] as bool? ?? true,
       downloadDirectory: json['downloadDirectory'] as String?,
+      historyLimit: json['historyLimit'] as int? ?? 50,
     );
   }
 
@@ -52,6 +58,7 @@ class SettingsState {
         themeMode: ThemeMode.dark,
         confirmBeforeConnect: true,
         downloadDirectory: null,
+        historyLimit: 50,
       );
 }
 
@@ -80,6 +87,11 @@ class SettingsController extends StateNotifier<SettingsState> {
 
   void setDownloadDirectory(String? path) {
     state = state.copyWith(downloadDirectory: path);
+    _persist();
+  }
+
+  void setHistoryLimit(int value) {
+    state = state.copyWith(historyLimit: value);
     _persist();
   }
 

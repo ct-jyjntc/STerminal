@@ -215,9 +215,19 @@
       }
     }
   },
+  "terminalSidebarFilesPreviewUnsupported": "仅支持预览文本文件",
   "terminalSidebarHistoryTitle": "历史命令",
   "terminalSidebarHistoryEmpty": "暂无命令",
   "terminalSidebarHistoryClear": "清空历史",
+  "settingsHistoryLimit": "历史数量限制",
+  "settingsHistoryLimitSubtitle": "最多保留 {count} 条命令",
+  "@settingsHistoryLimitSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "settingsDownloadPath": "下载位置",
   "settingsDownloadPathUnset": "未设置",
   "settingsDownloadPathChoose": "选择文件夹",

@@ -495,6 +495,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get terminalSidebarFilesPreviewUnsupported => '仅支持预览文本文件';
+
+  @override
   String get terminalSidebarHistoryTitle => '历史命令';
 
   @override
@@ -502,6 +505,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get terminalSidebarHistoryClear => '清空历史';
+
+  @override
+  String get settingsHistoryLimit => '历史数量限制';
+
+  @override
+  String settingsHistoryLimitSubtitle(int count) {
+    return '最多保留 $count 条命令';
+  }
 
   @override
   String get settingsDownloadPath => '下载位置';

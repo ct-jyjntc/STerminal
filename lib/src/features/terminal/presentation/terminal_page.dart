@@ -16,6 +16,7 @@ import '../../../domain/models/credential.dart';
 import '../../../domain/models/host.dart';
 import '../../../domain/models/snippet.dart';
 import '../../connections/application/hosts_providers.dart';
+import '../application/command_history_service.dart';
 import '../../settings/application/settings_controller.dart';
 import '../../snippets/application/snippet_providers.dart';
 import '../../snippets/presentation/snippet_form_sheet.dart';
@@ -45,6 +46,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   bool _entryContextMenuActive = false;
   List<String> _commandHistory = const [];
   final StringBuffer _commandBuffer = StringBuffer();
+  late final CommandHistoryService _historyService;
   Host? _currentHost;
   Credential? _currentCredential;
   bool _connecting = false;
@@ -55,6 +57,8 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   @override
   void initState() {
     super.initState();
+    _historyService = ref.read(commandHistoryServiceProvider);
+    _loadHistory();
     _terminal = Terminal(
       maxLines: 10000,
       platform: TerminalTargetPlatform.macos,
@@ -345,14 +349,17 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
         final command = _commandBuffer.toString().trim();
         _commandBuffer.clear();
         if (command.isNotEmpty) {
+          final limit =
+              ref.read(settingsControllerProvider).historyLimit.clamp(10, 200);
           setState(() {
             final history = List<String>.from(_commandHistory);
             history.remove(command);
             history.insert(0, command);
-            if (history.length > 100) {
-              history.removeRange(100, history.length);
+            if (history.length > limit) {
+              history.removeRange(limit, history.length);
             }
             _commandHistory = history;
+            _historyService.save(history);
           });
         }
       } else if (codeUnit == 127 || codeUnit == 8) {
@@ -366,6 +373,14 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
         _commandBuffer.writeCharCode(codeUnit);
       }
     }
+  }
+
+  Future<void> _loadHistory() async {
+    final stored = _historyService.load();
+    if (!mounted) return;
+    setState(() {
+      _commandHistory = List.unmodifiable(stored);
+    });
   }
 
 Widget _buildSidebarContentWithContextMenu(
@@ -517,6 +532,7 @@ Widget _buildSidebarContentWithContextMenu(
               setState(() {
                 _commandHistory = const [];
               });
+              _historyService.clear();
             },
             icon: const Icon(Icons.delete_sweep_outlined),
           ),
@@ -530,7 +546,7 @@ Widget _buildSidebarContentWithContextMenu(
                 dense: true,
                 title: Text(command),
                 onTap: () {
-                  _terminal.paste('$command ');
+                  _terminal.textInput('$command ');
                 },
               );
             },
@@ -695,6 +711,31 @@ Widget _buildSidebarContentWithContextMenu(
       normalized += separator;
     }
     return '$normalized$child';
+  }
+
+  bool _isTextFile(String filename) {
+    final lower = filename.toLowerCase();
+    const textExts = [
+      '.txt',
+      '.log',
+      '.conf',
+      '.ini',
+      '.json',
+      '.yaml',
+      '.yml',
+      '.sh',
+      '.bash',
+      '.zsh',
+      '.py',
+      '.js',
+      '.ts',
+      '.md',
+      '.properties',
+      '.cfg',
+    ];
+    if (lower.startsWith('.') && !lower.contains('.', 1)) return true;
+    if (!lower.contains('.')) return true;
+    return textExts.any(lower.endsWith);
   }
 
   String _formatFileSize(int bytes) {
@@ -954,9 +995,13 @@ Widget _buildSidebarContentWithContextMenu(
 
   Future<void> _openFilePreview(SftpName entry) async {
     if (_isDirectory(entry)) return;
+    final l10n = context.l10n;
+    if (!_isTextFile(entry.filename)) {
+      _showSnackBarMessage(l10n.terminalSidebarFilesPreviewUnsupported);
+      return;
+    }
     final sftp = _sftp;
     if (sftp == null) return;
-    final l10n = context.l10n;
     final remotePath = _joinPath(_currentDirectory, entry.filename);
     try {
       final file = await sftp.open(remotePath, mode: SftpFileOpenMode.read);

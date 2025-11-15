@@ -100,6 +100,28 @@ class SettingsPage extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 12),
+            ListItemCard(
+              leading: l10n.settingsHistoryLimit.characters.first.toUpperCase(),
+              accentColor: Theme.of(context).colorScheme.primaryContainer,
+              title: l10n.settingsHistoryLimit,
+              subtitle: l10n
+                  .settingsHistoryLimitSubtitle(settings.historyLimit),
+              actions: [
+                SizedBox(
+                  width: 220,
+                  child: Slider(
+                    value: settings.historyLimit.toDouble(),
+                    min: 10,
+                    max: 200,
+                    divisions: 19,
+                    label: settings.historyLimit.toString(),
+                    onChanged: (value) => controller
+                        .setHistoryLimit(value.round().clamp(10, 200)),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
           ],
         ),
       ),

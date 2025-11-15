@@ -306,9 +306,19 @@
       }
     }
   },
+  "terminalSidebarFilesPreviewUnsupported": "Only text files can be previewed.",
   "terminalSidebarHistoryTitle": "History",
   "terminalSidebarHistoryEmpty": "No commands yet.",
   "terminalSidebarHistoryClear": "Clear history",
+  "settingsHistoryLimit": "History limit",
+  "settingsHistoryLimitSubtitle": "Keep up to {count} commands",
+  "@settingsHistoryLimitSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "settingsDownloadPath": "Download folder",
   "settingsDownloadPathUnset": "Not set",
   "settingsDownloadPathChoose": "Choose folder",

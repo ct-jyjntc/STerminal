@@ -806,11 +806,41 @@ abstract class AppLocalizations {
   /// **'History'**
   String get terminalSidebarHistory;
 
-  /// No description provided for @terminalSidebarFilesPlaceholder.
+  /// No description provided for @terminalSidebarFilesLoading.
   ///
   /// In en, this message translates to:
-  /// **'File management coming soon.'**
-  String get terminalSidebarFilesPlaceholder;
+  /// **'Loading files...'**
+  String get terminalSidebarFilesLoading;
+
+  /// No description provided for @terminalSidebarFilesConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to load files.'**
+  String get terminalSidebarFilesConnect;
+
+  /// No description provided for @terminalSidebarFilesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder is empty.'**
+  String get terminalSidebarFilesEmpty;
+
+  /// No description provided for @terminalSidebarFilesError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load files: {error}'**
+  String terminalSidebarFilesError(String error);
+
+  /// No description provided for @terminalSidebarFilesRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload'**
+  String get terminalSidebarFilesRefresh;
+
+  /// No description provided for @terminalSidebarFilesUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent folder'**
+  String get terminalSidebarFilesUp;
 
   /// No description provided for @terminalSidebarHistoryPlaceholder.
   ///

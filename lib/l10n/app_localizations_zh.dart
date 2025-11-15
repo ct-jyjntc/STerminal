@@ -396,7 +396,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get terminalSidebarHistory => '历史';
 
   @override
-  String get terminalSidebarFilesPlaceholder => '文件管理功能即将上线';
+  String get terminalSidebarFilesLoading => '正在加载文件…';
+
+  @override
+  String get terminalSidebarFilesConnect => '连接后可查看文件';
+
+  @override
+  String get terminalSidebarFilesEmpty => '文件夹为空';
+
+  @override
+  String terminalSidebarFilesError(String error) {
+    return '加载文件失败：$error';
+  }
+
+  @override
+  String get terminalSidebarFilesRefresh => '刷新';
+
+  @override
+  String get terminalSidebarFilesUp => '上一级';
 
   @override
   String get terminalSidebarHistoryPlaceholder => '暂无历史记录';

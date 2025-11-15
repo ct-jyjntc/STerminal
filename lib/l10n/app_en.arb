@@ -216,7 +216,19 @@
   "terminalSidebarFiles": "Files",
   "terminalSidebarCommands": "Commands",
   "terminalSidebarHistory": "History",
-  "terminalSidebarFilesPlaceholder": "File management coming soon.",
+  "terminalSidebarFilesLoading": "Loading files...",
+  "terminalSidebarFilesConnect": "Connect to load files.",
+  "terminalSidebarFilesEmpty": "Folder is empty.",
+  "terminalSidebarFilesError": "Failed to load files: {error}",
+  "@terminalSidebarFilesError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "terminalSidebarFilesRefresh": "Reload",
+  "terminalSidebarFilesUp": "Parent folder",
   "terminalSidebarHistoryPlaceholder": "No history yet.",
   "terminalCredentialDeleted": "Credential deleted",
   "terminalCredentialError": "Credential error: {error}",

@@ -34,6 +34,11 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   SSHSession? _session;
   StreamSubscription<Uint8List>? _stdoutSub;
   StreamSubscription<Uint8List>? _stderrSub;
+  SftpClient? _sftp;
+  String _currentDirectory = '';
+  List<SftpName> _fileEntries = const [];
+  bool _loadingFiles = false;
+  String? _fileError;
   Host? _currentHost;
   Credential? _currentCredential;
   bool _connecting = false;
@@ -56,6 +61,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     _stderrSub?.cancel();
     _session?.close();
     _client?.close();
+    _sftp?.close();
     _terminalController.dispose();
     super.dispose();
   }
@@ -246,9 +252,15 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     await _stderrSub?.cancel();
     _session?.close();
     _client?.close();
+    _sftp?.close();
     setState(() {
       _connecting = true;
       _error = null;
+      _sftp = null;
+      _currentDirectory = '';
+      _fileEntries = const [];
+      _fileError = null;
+      _loadingFiles = false;
     });
     _terminal.buffer.clear();
     _terminal.write('${l10n.terminalConnectingMessage(host.address)}\r\n');
@@ -298,6 +310,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
         _currentCredential = credential;
         _error = null;
       });
+      unawaited(_initSftp());
       await ref.read(hostsRepositoryProvider).upsert(
             host.copyWith(
               lastConnectedAt: DateTime.now(),
@@ -328,15 +341,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   ) {
     switch (_sidebarTab) {
       case TerminalSidebarTab.files:
-        return Center(
-          child: Text(
-            l10n.terminalSidebarFilesPlaceholder,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(color: Theme.of(context).hintColor),
-          ),
-        );
+        return _buildFilesSidebar(context, l10n);
       case TerminalSidebarTab.commands:
         return Column(
           children: [
@@ -397,6 +402,199 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
           ),
         );
     }
+  }
+
+  Widget _buildFilesSidebar(BuildContext context, AppLocalizations l10n) {
+    if (_sftp == null) {
+      return Center(
+        child: Text(
+          _connecting
+              ? l10n.terminalSidebarFilesLoading
+              : l10n.terminalSidebarFilesConnect,
+        ),
+      );
+    }
+    final hasPath = _currentDirectory.isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  hasPath ? _currentDirectory : '',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                tooltip: l10n.terminalSidebarFilesRefresh,
+                onPressed: !_loadingFiles && hasPath
+                    ? () => _loadDirectory(_currentDirectory)
+                    : null,
+              ),
+            ],
+          ),
+        ),
+        if (hasPath && _currentDirectory != '/')
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.arrow_upward),
+            title: Text(l10n.terminalSidebarFilesUp),
+            onTap: _loadingFiles
+                ? null
+                : () => _loadDirectory(_parentDirectory(_currentDirectory)),
+          ),
+        Expanded(
+          child: _buildFileList(context, l10n),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFileList(BuildContext context, AppLocalizations l10n) {
+    if (_loadingFiles) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_fileError != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _fileError!,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            FilledButton(
+              onPressed: _currentDirectory.isEmpty
+                  ? null
+                  : () => _loadDirectory(_currentDirectory),
+              child: Text(l10n.terminalSidebarFilesRefresh),
+            ),
+          ],
+        ),
+      );
+    }
+    if (_fileEntries.isEmpty) {
+      return Center(child: Text(l10n.terminalSidebarFilesEmpty));
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      itemCount: _fileEntries.length,
+      separatorBuilder: (_, __) => const Divider(height: 1),
+      itemBuilder: (context, index) {
+        final entry = _fileEntries[index];
+        final isDir = _isDirectory(entry);
+        return ListTile(
+          dense: true,
+          leading: Icon(isDir ? Icons.folder : Icons.insert_drive_file),
+          title: Text(entry.filename),
+          subtitle: !isDir && entry.attr.size != null
+              ? Text(_formatFileSize(entry.attr.size!))
+              : null,
+          onTap: isDir
+              ? () => _loadDirectory(_joinPath(_currentDirectory, entry.filename))
+              : null,
+        );
+      },
+    );
+  }
+
+  Future<void> _initSftp() async {
+    final client = _client;
+    if (client == null) return;
+    final l10n = context.l10n;
+    try {
+      final sftp = await client.sftp();
+      final root = await sftp.absolute('.');
+      if (!mounted) {
+        sftp.close();
+        return;
+      }
+      _sftp?.close();
+      setState(() {
+        _sftp = sftp;
+      });
+      await _loadDirectory(root);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _fileError = l10n.terminalSidebarFilesError('$error');
+        _loadingFiles = false;
+      });
+    }
+  }
+
+  Future<void> _loadDirectory(String path) async {
+    final sftp = _sftp;
+    if (sftp == null) return;
+    final l10n = context.l10n;
+    setState(() {
+      _loadingFiles = true;
+      _fileError = null;
+    });
+    try {
+      final entries = await sftp.listdir(path);
+      entries.removeWhere(
+        (entry) => entry.filename == '.' || entry.filename == '..',
+      );
+      entries.sort((a, b) {
+        final dirA = _isDirectory(a) ? 0 : 1;
+        final dirB = _isDirectory(b) ? 0 : 1;
+        if (dirA != dirB) return dirA - dirB;
+        return a.filename.toLowerCase().compareTo(b.filename.toLowerCase());
+      });
+      if (!mounted) return;
+      setState(() {
+        _currentDirectory = path;
+        _fileEntries = entries;
+        _loadingFiles = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _fileError = l10n.terminalSidebarFilesError('$error');
+        _loadingFiles = false;
+      });
+    }
+  }
+
+  bool _isDirectory(SftpName entry) {
+    return entry.attr.mode?.type == SftpFileType.directory;
+  }
+
+  String _parentDirectory(String path) {
+    if (path.isEmpty || path == '/') return '/';
+    var normalized = path;
+    if (normalized.endsWith('/') && normalized.length > 1) {
+      normalized = normalized.substring(0, normalized.length - 1);
+    }
+    final index = normalized.lastIndexOf('/');
+    if (index <= 0) return '/';
+    return normalized.substring(0, index);
+  }
+
+  String _joinPath(String base, String child) {
+    if (child.startsWith('/')) return child;
+    var result = base.isEmpty ? '/' : base;
+    if (!result.endsWith('/')) {
+      result += '/';
+    }
+    return result == '//' ? '/$child' : '$result$child';
+  }
+
+  String _formatFileSize(int bytes) {
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    double size = bytes.toDouble();
+    var unitIndex = 0;
+    while (size >= 1024 && unitIndex < units.length - 1) {
+      size /= 1024;
+      unitIndex++;
+    }
+    return '${size.toStringAsFixed(unitIndex == 0 ? 0 : 1)} ${units[unitIndex]}';
   }
 }
 

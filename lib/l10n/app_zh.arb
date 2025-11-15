@@ -125,7 +125,19 @@
   "terminalSidebarFiles": "文件",
   "terminalSidebarCommands": "命令",
   "terminalSidebarHistory": "历史",
-  "terminalSidebarFilesPlaceholder": "文件管理功能即将上线",
+  "terminalSidebarFilesLoading": "正在加载文件…",
+  "terminalSidebarFilesConnect": "连接后可查看文件",
+  "terminalSidebarFilesEmpty": "文件夹为空",
+  "terminalSidebarFilesError": "加载文件失败：{error}",
+  "@terminalSidebarFilesError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "terminalSidebarFilesRefresh": "刷新",
+  "terminalSidebarFilesUp": "上一级",
   "terminalSidebarHistoryPlaceholder": "暂无历史记录",
   "terminalCredentialDeleted": "凭证已删除",
   "terminalCredentialError": "凭证错误：{error}",

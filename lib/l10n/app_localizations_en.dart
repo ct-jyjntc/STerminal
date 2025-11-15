@@ -403,7 +403,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get terminalSidebarHistory => 'History';
 
   @override
-  String get terminalSidebarFilesPlaceholder => 'File management coming soon.';
+  String get terminalSidebarFilesLoading => 'Loading files...';
+
+  @override
+  String get terminalSidebarFilesConnect => 'Connect to load files.';
+
+  @override
+  String get terminalSidebarFilesEmpty => 'Folder is empty.';
+
+  @override
+  String terminalSidebarFilesError(String error) {
+    return 'Failed to load files: $error';
+  }
+
+  @override
+  String get terminalSidebarFilesRefresh => 'Reload';
+
+  @override
+  String get terminalSidebarFilesUp => 'Parent folder';
 
   @override
   String get terminalSidebarHistoryPlaceholder => 'No history yet.';

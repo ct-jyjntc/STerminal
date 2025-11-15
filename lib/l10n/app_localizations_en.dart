@@ -394,6 +394,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get terminalNewSnippetTooltip => 'New snippet';
 
   @override
+  String get terminalSidebarFiles => 'Files';
+
+  @override
+  String get terminalSidebarCommands => 'Commands';
+
+  @override
+  String get terminalSidebarHistory => 'History';
+
+  @override
+  String get terminalSidebarFilesPlaceholder => 'File management coming soon.';
+
+  @override
+  String get terminalSidebarHistoryPlaceholder => 'No history yet.';
+
+  @override
   String get terminalCredentialDeleted => 'Credential deleted';
 
   @override

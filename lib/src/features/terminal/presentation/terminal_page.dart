@@ -8,9 +8,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sterminal/src/l10n/l10n.dart';
 import 'package:xterm/xterm.dart';
 
+import 'package:sterminal/l10n/app_localizations.dart';
 import '../../../core/app_providers.dart';
 import '../../../domain/models/credential.dart';
 import '../../../domain/models/host.dart';
+import '../../../domain/models/snippet.dart';
 import '../../connections/application/hosts_providers.dart';
 import '../../snippets/application/snippet_providers.dart';
 import '../../snippets/presentation/snippet_form_sheet.dart';
@@ -37,6 +39,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   bool _connecting = false;
   String? _error;
   String? _autoConnectAttemptedHostId;
+  TerminalSidebarTab _sidebarTab = TerminalSidebarTab.commands;
 
   @override
   void initState() {
@@ -101,113 +104,118 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
             final terminalTheme =
                 isDark ? TerminalThemes.defaultTheme : _lightTerminalTheme;
             return Scaffold(
-              appBar: AppBar(
-                title: Text('${host.name} (${host.address}:${host.port})'),
-                actions: [
-                  IconButton(
-                    tooltip: l10n.terminalReconnectTooltip,
-                    onPressed: _connecting
-                        ? null
-                        : () {
-                            setState(() {
-                              _autoConnectAttemptedHostId = host.id;
-                            });
-                            _reconnect(host, credential);
-                          },
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  IconButton(
-                    tooltip: l10n.terminalNewSnippetTooltip,
-                    onPressed: () => showSnippetFormSheet(context),
-                    icon: const Icon(Icons.add),
-                  ),
-                ],
-              ),
-              body: Row(
-                children: [
-                  Expanded(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(color: terminalTheme.background),
-                      child: TerminalView(
-                        _terminal,
-                        controller: _terminalController,
-                        autofocus: true,
-                        padding: const EdgeInsets.all(16),
-                        theme: terminalTheme,
-                        keyboardAppearance:
-                            isDark ? Brightness.dark : Brightness.light,
-                        backgroundOpacity: 1.0,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: 280,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      border: const Border(left: BorderSide(color: Colors.white10)),
-                    ),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 16),
-                        ListTile(
-                          title: Text(l10n.snippetsTitle),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.add),
-                            tooltip: l10n.terminalNewSnippetTooltip,
-                            onPressed: () => showSnippetFormSheet(context),
-                          ),
-                        ),
-                        Expanded(
-                          child: snippets.when(
-                            loading: () => const Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                            error: (error, _) =>
-                                Center(child: Text(l10n.genericErrorMessage('$error'))),
-                            data: (items) {
-                              if (items.isEmpty) {
-                                return Center(
-                                  child: Text(l10n.snippetsPanelHint),
-                                );
-                              }
-                              return ListView.separated(
-                                padding: const EdgeInsets.all(8),
-                                itemBuilder: (context, index) {
-                                  final snippet = items[index];
-                                  return ListTile(
-                                    dense: true,
-                                    title: Text(snippet.title),
-                                    subtitle: Text(
-                                      snippet.command,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    onTap: () {
-                                      _terminal.paste('${snippet.command}\r');
-                                    },
-                                  );
-                                },
-                                separatorBuilder: (_, __) =>
-                                    const Divider(height: 1),
-                                itemCount: items.length,
-                              );
-                            },
-                          ),
-                        ),
-                        if (_error != null)
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              body: SafeArea(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
                           Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              _error!,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.error,
+                            padding:
+                                const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.arrow_back),
+                                  tooltip: MaterialLocalizations.of(context)
+                                      .backButtonTooltip,
+                                  onPressed: () =>
+                                      Navigator.of(context).maybePop(),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    '${host.name} (${host.address}:${host.port})',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                              child: DecoratedBox(
+                                decoration:
+                                    BoxDecoration(color: terminalTheme.background),
+                                child: TerminalView(
+                                  _terminal,
+                                  controller: _terminalController,
+                                  autofocus: true,
+                                  padding: const EdgeInsets.all(16),
+                                  theme: terminalTheme,
+                                  keyboardAppearance:
+                                      isDark ? Brightness.dark : Brightness.light,
+                                  backgroundOpacity: 1.0,
+                                ),
                               ),
                             ),
                           ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                    Container(
+                      width: 320,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        border:
+                            const Border(left: BorderSide(color: Colors.white10)),
+                      ),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                            child: SegmentedButton<TerminalSidebarTab>(
+                              segments: [
+                                ButtonSegment(
+                                  value: TerminalSidebarTab.files,
+                                  label: Text(l10n.terminalSidebarFiles),
+                                ),
+                                ButtonSegment(
+                                  value: TerminalSidebarTab.commands,
+                                  label: Text(l10n.terminalSidebarCommands),
+                                ),
+                                ButtonSegment(
+                                  value: TerminalSidebarTab.history,
+                                  label: Text(l10n.terminalSidebarHistory),
+                                ),
+                              ],
+                              selected: {_sidebarTab},
+                              onSelectionChanged: (value) {
+                                setState(() {
+                                  _sidebarTab = value.first;
+                                });
+                              },
+                            ),
+                          ),
+                          Expanded(
+                            child: _buildSidebarContent(
+                              context,
+                              l10n,
+                              snippets,
+                            ),
+                          ),
+                          if (_error != null)
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                _error!,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -309,6 +317,84 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     final text = utf8.decode(data);
     _terminal.write(text);
   }
+
+  Widget _buildSidebarContent(
+    BuildContext context,
+    AppLocalizations l10n,
+    AsyncValue<List<Snippet>> snippets,
+  ) {
+    switch (_sidebarTab) {
+      case TerminalSidebarTab.files:
+        return Center(
+          child: Text(
+            l10n.terminalSidebarFilesPlaceholder,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: Theme.of(context).hintColor),
+          ),
+        );
+      case TerminalSidebarTab.commands:
+        return Column(
+          children: [
+            ListTile(
+              title: Text(l10n.snippetsTitle),
+              trailing: IconButton(
+                icon: const Icon(Icons.add),
+                tooltip: l10n.terminalNewSnippetTooltip,
+                onPressed: () => showSnippetFormSheet(context),
+              ),
+            ),
+            Expanded(
+              child: snippets.when(
+                loading: () => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+                error: (error, _) =>
+                    Center(child: Text(l10n.genericErrorMessage('$error'))),
+                data: (items) {
+                  if (items.isEmpty) {
+                    return Center(
+                      child: Text(l10n.snippetsPanelHint),
+                    );
+                  }
+                  return ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemBuilder: (context, index) {
+                      final snippet = items[index];
+                      return ListTile(
+                        dense: true,
+                        title: Text(snippet.title),
+                        subtitle: Text(
+                          snippet.command,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        onTap: () {
+                          _terminal.paste('${snippet.command}\r');
+                        },
+                      );
+                    },
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemCount: items.length,
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      case TerminalSidebarTab.history:
+        return Center(
+          child: Text(
+            l10n.terminalSidebarHistoryPlaceholder,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: Theme.of(context).hintColor),
+          ),
+        );
+    }
+  }
 }
 
 const TerminalTheme _lightTerminalTheme = TerminalTheme(
@@ -336,3 +422,5 @@ const TerminalTheme _lightTerminalTheme = TerminalTheme(
   searchHitBackgroundCurrent: Color(0xFF8AB4F8),
   searchHitForeground: Color(0xFF000000),
 );
+
+enum TerminalSidebarTab { files, commands, history }

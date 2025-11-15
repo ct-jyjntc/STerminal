@@ -387,6 +387,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get terminalNewSnippetTooltip => '新建片段';
 
   @override
+  String get terminalSidebarFiles => '文件';
+
+  @override
+  String get terminalSidebarCommands => '命令';
+
+  @override
+  String get terminalSidebarHistory => '历史';
+
+  @override
+  String get terminalSidebarFilesPlaceholder => '文件管理功能即将上线';
+
+  @override
+  String get terminalSidebarHistoryPlaceholder => '暂无历史记录';
+
+  @override
   String get terminalCredentialDeleted => '凭证已删除';
 
   @override

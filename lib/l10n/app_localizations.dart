@@ -788,6 +788,36 @@ abstract class AppLocalizations {
   /// **'New snippet'**
   String get terminalNewSnippetTooltip;
 
+  /// No description provided for @terminalSidebarFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get terminalSidebarFiles;
+
+  /// No description provided for @terminalSidebarCommands.
+  ///
+  /// In en, this message translates to:
+  /// **'Commands'**
+  String get terminalSidebarCommands;
+
+  /// No description provided for @terminalSidebarHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get terminalSidebarHistory;
+
+  /// No description provided for @terminalSidebarFilesPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'File management coming soon.'**
+  String get terminalSidebarFilesPlaceholder;
+
+  /// No description provided for @terminalSidebarHistoryPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'No history yet.'**
+  String get terminalSidebarHistoryPlaceholder;
+
   /// No description provided for @terminalCredentialDeleted.
   ///
   /// In en, this message translates to:

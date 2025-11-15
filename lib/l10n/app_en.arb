@@ -213,6 +213,11 @@
   },
   "terminalReconnectTooltip": "Reconnect",
   "terminalNewSnippetTooltip": "New snippet",
+  "terminalSidebarFiles": "Files",
+  "terminalSidebarCommands": "Commands",
+  "terminalSidebarHistory": "History",
+  "terminalSidebarFilesPlaceholder": "File management coming soon.",
+  "terminalSidebarHistoryPlaceholder": "No history yet.",
   "terminalCredentialDeleted": "Credential deleted",
   "terminalCredentialError": "Credential error: {error}",
   "@terminalCredentialError": {

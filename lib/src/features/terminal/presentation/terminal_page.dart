@@ -42,6 +42,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   List<SftpName> _fileEntries = const <SftpName>[];
   bool _loadingFiles = false;
   String? _fileError;
+  bool _entryContextMenuActive = false;
   Host? _currentHost;
   Credential? _currentCredential;
   bool _connecting = false;
@@ -208,21 +209,8 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                           ),
         Expanded(
           child: _sidebarTab == TerminalSidebarTab.files
-              ? GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onSecondaryTapDown: (details) =>
-                      _showFileContextMenu(context, details.globalPosition),
-                  child: _buildSidebarContent(
-                    context,
-                    l10n,
-                    snippets,
-                  ),
-                )
-              : _buildSidebarContent(
-                  context,
-                  l10n,
-                  snippets,
-                ),
+              ? _buildSidebarContentWithContextMenu(context, l10n, snippets)
+              : _buildSidebarContent(context, l10n, snippets),
         ),
                           if (_error != null)
                             Padding(
@@ -347,6 +335,20 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     final text = utf8.decode(data);
     _terminal.write(text);
   }
+
+Widget _buildSidebarContentWithContextMenu(
+  BuildContext context,
+  AppLocalizations l10n,
+  AsyncValue<List<Snippet>> snippets,
+) {
+  return _ContextMenuRegion(
+    onShowMenu: (position) {
+      if (_entryContextMenuActive) return;
+      _showFileContextMenu(context, position);
+    },
+    child: _buildSidebarContent(context, l10n, snippets),
+  );
+}
 
   Widget _buildSidebarContent(
     BuildContext context,
@@ -502,21 +504,28 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       itemBuilder: (context, index) {
         final entry = _fileEntries[index];
         final isDir = _isDirectory(entry);
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onSecondaryTapDown: (details) =>
-              _showFileContextMenu(context, details.globalPosition, entry: entry),
-                          child: ListTile(
+        final VoidCallback onTap = isDir
+            ? () =>
+                _loadDirectory(_joinPath(_currentDirectory, entry.filename))
+            : () => _openFilePreview(entry);
+        return _HoverableItem(
+          onTap: onTap,
+          onContextMenu: (position) {
+            _entryContextMenuActive = true;
+            _showFileContextMenu(
+              context,
+              position,
+              entry: entry,
+            ).whenComplete(() => _entryContextMenuActive = false);
+          },
+          child: ListTile(
             dense: true,
             leading: Icon(isDir ? Icons.folder : Icons.insert_drive_file),
             title: Text(entry.filename),
             subtitle: !isDir && entry.attr.size != null
                 ? Text(_formatFileSize(entry.attr.size!))
                 : null,
-            onTap: isDir
-                ? () =>
-                    _loadDirectory(_joinPath(_currentDirectory, entry.filename))
-                : () => _openFilePreview(entry),
+            onTap: null,
           ),
         );
       },
@@ -1022,4 +1031,69 @@ enum _FileContextAction {
   download,
   upload,
   delete,
+}
+
+class _ContextMenuRegion extends StatefulWidget {
+  const _ContextMenuRegion({required this.child, required this.onShowMenu});
+
+  final Widget child;
+  final ValueChanged<Offset> onShowMenu;
+
+  @override
+  State<_ContextMenuRegion> createState() => _ContextMenuRegionState();
+}
+
+class _HoverableItem extends StatelessWidget {
+  const _HoverableItem({
+    required this.child,
+    required this.onContextMenu,
+    required this.onTap,
+  });
+
+  final Widget child;
+  final ValueChanged<Offset> onContextMenu;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        onSecondaryTapDown: (details) =>
+            onContextMenu(details.globalPosition),
+        hoverColor: Theme.of(context).hoverColor,
+        child: child,
+      ),
+    );
+  }
+}
+
+class _ContextMenuRegionState extends State<_ContextMenuRegion> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onSecondaryTapDown: (details) async {
+        setState(() => _pressed = true);
+        widget.onShowMenu(details.globalPosition);
+        await Future.delayed(const Duration(milliseconds: 80));
+        if (mounted) {
+          setState(() => _pressed = false);
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 60),
+        color: _pressed
+            ? Theme.of(context)
+                .colorScheme
+                .surfaceContainerHighest
+                .withValues(alpha: 0.4)
+            : null,
+        child: widget.child,
+      ),
+    );
+  }
 }

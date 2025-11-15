@@ -114,7 +114,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                         children: [
                           Padding(
                             padding:
-                                const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                                const EdgeInsets.fromLTRB(24, 8, 24, 4),
                             child: Row(
                               children: [
                                 Padding(

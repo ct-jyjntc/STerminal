@@ -44,6 +44,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   String _currentDirectory = '';
   late final TextEditingController _pathController;
   List<_FileNode> _fileTree = const <_FileNode>[];
+  List<Snippet> _snippetCache = const [];
   Set<String> _loadingPaths = <String>{};
   bool _initialFileLoading = false;
   String? _fileError;
@@ -127,6 +128,9 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
             final isDark = brightness == Brightness.dark;
             final terminalTheme =
                 isDark ? TerminalThemes.defaultTheme : _lightTerminalTheme;
+            snippets.whenData((items) {
+              _snippetCache = items;
+            });
             return Scaffold(
               backgroundColor: Theme.of(context).colorScheme.surface,
               body: SafeArea(
@@ -322,8 +326,10 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       _stdoutSub = session.stdout.listen(_onData);
       _stderrSub = session.stderr.listen(_onData);
       _terminal.onOutput = (data) {
-        _handleTerminalInput(data);
-        session.write(Uint8List.fromList(utf8.encode(data)));
+        final shouldSend = _handleTerminalInput(data);
+        if (shouldSend) {
+          session.write(Uint8List.fromList(utf8.encode(data)));
+        }
       };
       _terminal.onResize = (width, height, pixelWidth, pixelHeight) {
         session.resizeTerminal(width, height, pixelWidth, pixelHeight);
@@ -361,8 +367,14 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     _terminal.write(text);
   }
 
-  void _handleTerminalInput(String data) {
+  bool _handleTerminalInput(String data) {
     for (final codePoint in data.runes) {
+      if (codePoint == 9) {
+        // Tab pressed: show local completion suggestions instead of sending to host.
+        final current = _commandBuffer.toString();
+        unawaited(_showCompletionSuggestions(prefix: current));
+        return false;
+      }
       if (codePoint == 13 || codePoint == 10) {
         final command = _commandBuffer.toString().trim();
         _commandBuffer.clear();
@@ -394,6 +406,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
         _commandBuffer.write(String.fromCharCode(codePoint));
       }
     }
+    return true;
   }
 
   Future<void> _loadHistory() async {
@@ -402,6 +415,70 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     setState(() {
       _commandHistory = List.unmodifiable(stored);
     });
+  }
+
+  Future<void> _showCompletionSuggestions({required String prefix}) async {
+    if (!mounted) return;
+    final lowerPrefix = prefix.toLowerCase();
+    final historyMatches = _commandHistory.where((cmd) {
+      if (lowerPrefix.isEmpty) return true;
+      return cmd.toLowerCase().startsWith(lowerPrefix);
+    });
+    final snippetMatches = _snippetCache
+        .map((s) => s.command)
+        .where((cmd) {
+          if (lowerPrefix.isEmpty) return true;
+          return cmd.toLowerCase().startsWith(lowerPrefix);
+        });
+    final seen = <String>{};
+    final suggestions = <String>[];
+    for (final cmd in [...historyMatches, ...snippetMatches]) {
+      final trimmed = cmd.trim();
+      if (trimmed.isEmpty || seen.contains(trimmed)) continue;
+      seen.add(trimmed);
+      suggestions.add(trimmed);
+      if (suggestions.length >= 15) break;
+    }
+    if (suggestions.isEmpty) {
+      _showSnackBarMessage(context.l10n.terminalSidebarHistoryEmpty);
+      return;
+    }
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      constraints: const BoxConstraints(maxHeight: 440),
+      builder: (sheetContext) {
+        return ListView.separated(
+          itemCount: suggestions.length,
+          separatorBuilder: (_, __) => const Divider(height: 1),
+          itemBuilder: (context, index) {
+            final suggestion = suggestions[index];
+            return ListTile(
+              dense: true,
+              leading: const Icon(Icons.keyboard_tab),
+              title: Text(suggestion),
+              onTap: () => Navigator.of(sheetContext).pop(suggestion),
+            );
+          },
+        );
+      },
+    );
+    if (selected != null && selected.isNotEmpty) {
+      final current = _commandBuffer.toString();
+      if (selected.startsWith(current)) {
+        final remaining = selected.substring(current.length);
+        _terminal.paste('$remaining ');
+        _commandBuffer
+          ..clear()
+          ..write('$selected ');
+      } else {
+        // Fall back to sending full suggestion.
+        _terminal.paste('$selected ');
+        _commandBuffer
+          ..clear()
+          ..write('$selected ');
+      }
+    }
   }
 
   Widget _buildSidebarContentWithContextMenu(

@@ -163,16 +163,17 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                               child: DecoratedBox(
                                 decoration:
                                     BoxDecoration(color: terminalTheme.background),
-                                child: TerminalView(
-                                  _terminal,
-                                  controller: _terminalController,
-                                  autofocus: true,
-                                  padding: const EdgeInsets.all(16),
-                                  theme: terminalTheme,
-                                  keyboardAppearance:
-                                      isDark ? Brightness.dark : Brightness.light,
-                                  backgroundOpacity: 1.0,
-                                ),
+                      child: TerminalView(
+                        _terminal,
+                        controller: _terminalController,
+                        autofocus: true,
+                        padding: const EdgeInsets.all(16),
+                        theme: terminalTheme,
+                        keyboardAppearance:
+                            isDark ? Brightness.dark : Brightness.light,
+                        keyboardType: TextInputType.multiline,
+                        backgroundOpacity: 1.0,
+                      ),
                               ),
                             ),
                           ),
@@ -351,16 +352,19 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
         if (command.isNotEmpty) {
           final limit =
               ref.read(settingsControllerProvider).historyLimit.clamp(10, 200);
-          setState(() {
-            final history = List<String>.from(_commandHistory);
-            history.remove(command);
-            history.insert(0, command);
-            if (history.length > limit) {
-              history.removeRange(limit, history.length);
-            }
-            _commandHistory = history;
-            _historyService.save(history);
+          final history = List<String>.from(_commandHistory);
+          history.remove(command);
+          history.insert(0, command);
+          if (history.length > limit) {
+            history.removeRange(limit, history.length);
+          }
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            setState(() {
+              _commandHistory = history;
+            });
           });
+          _historyService.save(history);
         }
       } else if (codeUnit == 127 || codeUnit == 8) {
         if (_commandBuffer.isNotEmpty) {
@@ -715,27 +719,40 @@ Widget _buildSidebarContentWithContextMenu(
 
   bool _isTextFile(String filename) {
     final lower = filename.toLowerCase();
-    const textExts = [
-      '.txt',
-      '.log',
-      '.conf',
-      '.ini',
-      '.json',
-      '.yaml',
-      '.yml',
-      '.sh',
-      '.bash',
-      '.zsh',
-      '.py',
-      '.js',
-      '.ts',
-      '.md',
-      '.properties',
-      '.cfg',
-    ];
-    if (lower.startsWith('.') && !lower.contains('.', 1)) return true;
-    if (!lower.contains('.')) return true;
-    return textExts.any(lower.endsWith);
+    const allowedNames = {
+      'readme',
+      'license',
+    };
+    if (allowedNames.contains(lower)) return true;
+    final dotIndex = lower.lastIndexOf('.');
+    if (dotIndex < 0 || dotIndex == lower.length - 1) return false;
+    final ext = lower.substring(dotIndex + 1);
+    const textExts = {
+      'txt',
+      'log',
+      'conf',
+      'ini',
+      'json',
+      'yaml',
+      'yml',
+      'sh',
+      'bash',
+      'zsh',
+      'py',
+      'js',
+      'ts',
+      'md',
+      'properties',
+      'cfg',
+      'env',
+      'bashrc',
+      'zshrc',
+      'profile',
+      'bash_profile',
+      'gitconfig',
+      'gitignore',
+    };
+    return textExts.contains(ext);
   }
 
   String _formatFileSize(int bytes) {

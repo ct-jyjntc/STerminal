@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/app_providers.dart';
 
 const _settingsKey = 'settings/v1';
+const _undefined = Object();
 
 class SettingsState {
   const SettingsState({
@@ -30,7 +31,7 @@ class SettingsState {
   SettingsState copyWith({
     ThemeMode? themeMode,
     bool? confirmBeforeConnect,
-    String? downloadDirectory,
+    Object? downloadDirectory = _undefined,
     int? historyLimit,
     bool? openConnectionsInNewWindow,
     TerminalSidebarDefaultTab? terminalSidebarDefaultTab,
@@ -39,7 +40,9 @@ class SettingsState {
     return SettingsState(
       themeMode: themeMode ?? this.themeMode,
       confirmBeforeConnect: confirmBeforeConnect ?? this.confirmBeforeConnect,
-      downloadDirectory: downloadDirectory ?? this.downloadDirectory,
+      downloadDirectory: downloadDirectory == _undefined
+          ? this.downloadDirectory
+          : downloadDirectory as String?,
       historyLimit: historyLimit ?? this.historyLimit,
       openConnectionsInNewWindow:
           openConnectionsInNewWindow ?? this.openConnectionsInNewWindow,

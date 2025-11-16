@@ -54,8 +54,6 @@ class VaultPage extends ConsumerWidget {
                                 ? l10n.credentialAuthPassword
                                 : l10n.credentialAuthKeyPair;
                         return ListItemCard(
-                          leading: credential.name.characters.first.toUpperCase(),
-                          accentColor: Theme.of(context).colorScheme.primary,
                           title: credential.name,
                           subtitle: '${credential.username} • $authLabel',
                           onTap: () =>

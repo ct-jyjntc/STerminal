@@ -5,15 +5,11 @@ import 'package:sterminal/src/l10n/l10n.dart';
 import '../../../../core/app_providers.dart';
 import '../../../../domain/models/host.dart';
 import '../../../../domain/models/proxy_settings.dart';
-import '../../../../utils/color_utils.dart';
 import '../../../groups/application/group_providers.dart';
 import '../../../vault/application/credential_providers.dart';
 import '../../../vault/presentation/credential_form_sheet.dart';
 
-Future<void> showHostFormSheet(
-  BuildContext context, {
-  Host? host,
-}) {
+Future<void> showHostFormSheet(BuildContext context, {Host? host}) {
   return showModalBottomSheet(
     context: context,
     useRootNavigator: true,
@@ -52,37 +48,32 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
   late HostProxyMode _proxyMode;
   bool _isSaving = false;
 
-  static const _colorOptions = [
-    '#4DD0E1',
-    '#9575CD',
-    '#F06292',
-    '#FFB74D',
-    '#AED581',
-    '#4FC3F7',
-  ];
-
   @override
   void initState() {
     super.initState();
     final host = widget.host;
     _nameController = TextEditingController(text: host?.name);
     _addressController = TextEditingController(text: host?.address);
-    _portController =
-        TextEditingController(text: (host?.port ?? 22).toString());
+    _portController = TextEditingController(
+      text: (host?.port ?? 22).toString(),
+    );
     _selectedGroup = host?.groupId;
     _selectedCredential = host?.credentialId;
-    _colorHex = host?.colorHex ?? _colorOptions.first;
+    _colorHex = host?.colorHex ?? '#4DD0E1';
     final proxy = host?.proxy ?? const HostProxySettings();
     _proxyMode = proxy.mode == HostProxyMode.customSocks
         ? HostProxyMode.customSocks
         : HostProxyMode.none;
     _proxyHostController = TextEditingController(text: proxy.host);
-    _proxyPortController =
-        TextEditingController(text: proxy.port?.toString() ?? '');
-    _proxyUsernameController =
-        TextEditingController(text: proxy.username ?? '');
-    _proxyPasswordController =
-        TextEditingController(text: proxy.password ?? '');
+    _proxyPortController = TextEditingController(
+      text: proxy.port?.toString() ?? '',
+    );
+    _proxyUsernameController = TextEditingController(
+      text: proxy.username ?? '',
+    );
+    _proxyPasswordController = TextEditingController(
+      text: proxy.password ?? '',
+    );
   }
 
   @override
@@ -119,8 +110,9 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
                 ),
                 const Spacer(),
                 IconButton(
-                  onPressed:
-                      _isSaving ? null : () => Navigator.of(context).pop(),
+                  onPressed: _isSaving
+                      ? null
+                      : () => Navigator.of(context).pop(),
                   icon: const Icon(Icons.close),
                 ),
               ],
@@ -128,9 +120,7 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
             const SizedBox(height: 16),
             TextField(
               controller: _nameController,
-              decoration: InputDecoration(
-                labelText: l10n.hostFormDisplayName,
-              ),
+              decoration: InputDecoration(labelText: l10n.hostFormDisplayName),
             ),
             const SizedBox(height: 16),
             Row(
@@ -167,8 +157,9 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
                   for (final credential in items)
                     DropdownMenuItem(
                       value: credential.id,
-                      child:
-                          Text('${credential.name} (${credential.username})'),
+                      child: Text(
+                        '${credential.name} (${credential.username})',
+                      ),
                     ),
                 ];
                 return Column(
@@ -224,15 +215,13 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
                     child: Text(l10n.hostFormNoGroupOption),
                   ),
                   for (final group in items)
-                    DropdownMenuItem(
-                      value: group.id,
-                      child: Text(group.name),
-                    ),
+                    DropdownMenuItem(value: group.id, child: Text(group.name)),
                 ];
                 return DropdownButtonFormField<String?>(
                   initialValue: _selectedGroup,
-                  decoration:
-                      InputDecoration(labelText: l10n.hostFormGroupLabel),
+                  decoration: InputDecoration(
+                    labelText: l10n.hostFormGroupLabel,
+                  ),
                   isExpanded: true,
                   items: dropdownItems,
                   onChanged: (value) {
@@ -251,8 +240,9 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
               children: [
                 DropdownButtonFormField<HostProxyMode>(
                   value: _proxyMode,
-                  decoration:
-                      InputDecoration(labelText: l10n.hostFormProxyLabel),
+                  decoration: InputDecoration(
+                    labelText: l10n.hostFormProxyLabel,
+                  ),
                   items: [
                     DropdownMenuItem(
                       value: HostProxyMode.none,
@@ -322,37 +312,6 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
               ],
             ),
             const SizedBox(height: 24),
-            Row(
-              children: [
-                Text(l10n.hostFormAccentLabel),
-                const SizedBox(width: 12),
-                Wrap(
-                  spacing: 8,
-                  children: [
-                    for (final color in _colorOptions)
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _colorHex = color;
-                          });
-                        },
-                        child: Container(
-                          height: 28,
-                          width: 28,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: parseColor(color),
-                            border: _colorHex == color
-                                ? Border.all(color: Colors.white, width: 2)
-                                : null,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
@@ -382,9 +341,7 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
     final messenger = ScaffoldMessenger.of(context);
     if (_nameController.text.trim().isEmpty ||
         _addressController.text.trim().isEmpty) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.hostFormValidation)),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(l10n.hostFormValidation)));
       return;
     }
     final credentialId = _selectedCredential;
@@ -421,7 +378,8 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
       });
       return;
     }
-    final updatedHost = host?.copyWith(
+    final updatedHost =
+        host?.copyWith(
           name: _nameController.text.trim(),
           address: _addressController.text.trim(),
           port: port,

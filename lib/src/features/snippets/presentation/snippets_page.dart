@@ -32,15 +32,15 @@ class SnippetsPage extends ConsumerWidget {
             children: [
               Text(
                 l10n.snippetsTitle,
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 16),
               Expanded(
                 child: snippets.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (error, _) =>
                       Center(child: Text(l10n.genericErrorMessage('$error'))),
                   data: (snippetItems) {
@@ -54,7 +54,8 @@ class SnippetsPage extends ConsumerWidget {
                         final snippet = snippetItems[index];
                         return _SnippetRow(
                           snippet: snippet,
-                          onEdit: () => showSnippetFormSheet(context, snippet: snippet),
+                          onEdit: () =>
+                              showSnippetFormSheet(context, snippet: snippet),
                           onDelete: () => _confirmDelete(context, ref, snippet),
                           onCopy: () async {
                             await Clipboard.setData(
@@ -122,11 +123,7 @@ class _SnippetRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = Theme.of(context).colorScheme.primary;
-
     return ListItemCard(
-      leading: snippet.title.characters.first.toUpperCase(),
-      accentColor: accent,
       title: snippet.title,
       subtitle: snippet.command,
       actions: [
@@ -134,14 +131,8 @@ class _SnippetRow extends StatelessWidget {
           onPressed: onCopy,
           icon: const Icon(Icons.copy_all_outlined),
         ),
-        IconButton(
-          onPressed: onEdit,
-          icon: const Icon(Icons.edit_outlined),
-        ),
-        IconButton(
-          onPressed: onDelete,
-          icon: const Icon(Icons.delete_outline),
-        ),
+        IconButton(onPressed: onEdit, icon: const Icon(Icons.edit_outlined)),
+        IconButton(onPressed: onDelete, icon: const Icon(Icons.delete_outline)),
       ],
     );
   }

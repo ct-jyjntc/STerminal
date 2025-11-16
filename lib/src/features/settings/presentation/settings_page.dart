@@ -86,8 +86,6 @@ class SettingsPage extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             ListItemCard(
-              leading: l10n.settingsAppearance.characters.first.toUpperCase(),
-              accentColor: primaryColor,
               title: l10n.settingsAppearance,
               subtitle: l10n.settingsThemeSystem,
               actions: [
@@ -120,8 +118,6 @@ class SettingsPage extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             ListItemCard(
-              leading: l10n.settingsConfirm.characters.first.toUpperCase(),
-              accentColor: primaryColor,
               title: l10n.settingsConfirm,
               subtitle: l10n.settingsConfirmSubtitle,
               actions: [
@@ -133,8 +129,6 @@ class SettingsPage extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             ListItemCard(
-              leading: l10n.settingsMultiWindow.characters.first.toUpperCase(),
-              accentColor: Theme.of(context).colorScheme.tertiary,
               title: l10n.settingsMultiWindow,
               subtitle: l10n.settingsMultiWindowSubtitle,
               actions: [
@@ -146,8 +140,6 @@ class SettingsPage extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             ListItemCard(
-              leading: l10n.settingsDownloadPath.characters.first.toUpperCase(),
-              accentColor: Theme.of(context).colorScheme.secondary,
               title: l10n.settingsDownloadPath,
               subtitle: (settings.downloadDirectory?.isNotEmpty ?? false)
                   ? settings.downloadDirectory!
@@ -168,8 +160,6 @@ class SettingsPage extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             ListItemCard(
-              leading: l10n.settingsExport.characters.first.toUpperCase(),
-              accentColor: Theme.of(context).colorScheme.secondary,
               title: l10n.settingsExport,
               subtitle:
                   '${l10n.settingsExportSubtitle} · ${l10n.settingsImportSubtitle}',
@@ -189,8 +179,6 @@ class SettingsPage extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             ListItemCard(
-              leading: l10n.settingsHistoryLimit.characters.first.toUpperCase(),
-              accentColor: Theme.of(context).colorScheme.primaryContainer,
               title: l10n.settingsHistoryLimit,
               subtitle: l10n.settingsHistoryLimitSubtitle(
                 settings.historyLimit,
@@ -213,9 +201,6 @@ class SettingsPage extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             ListItemCard(
-              leading: l10n.settingsTerminalSidebar.characters.first
-                  .toUpperCase(),
-              accentColor: Theme.of(context).colorScheme.primary,
               title: l10n.settingsTerminalSidebar,
               subtitle: l10n.settingsTerminalSidebarSubtitle,
               actions: [
@@ -248,9 +233,6 @@ class SettingsPage extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             ListItemCard(
-              leading: l10n.settingsTerminalHighlight.characters.first
-                  .toUpperCase(),
-              accentColor: Theme.of(context).colorScheme.tertiaryContainer,
               title: l10n.settingsTerminalHighlight,
               subtitle: l10n.settingsTerminalHighlightSubtitle,
               actions: [

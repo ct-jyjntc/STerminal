@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:sterminal/src/l10n/l10n.dart';
 
 import '../../../../domain/models/host.dart';
-import '../../../../utils/color_utils.dart';
 import '../../../../widgets/list_item_card.dart';
 
 class HostCard extends StatelessWidget {
@@ -27,10 +26,7 @@ class HostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = parseColor(host.colorHex);
     return ListItemCard(
-      leading: host.name.characters.first.toUpperCase(),
-      accentColor: color,
       title: host.name,
       subtitle: subtitle,
       onTap: onTap,

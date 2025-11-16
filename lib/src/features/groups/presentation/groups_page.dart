@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sterminal/src/l10n/l10n.dart';
 
 import '../../../core/app_providers.dart';
-import '../../../utils/color_utils.dart';
 import '../../connections/application/hosts_providers.dart';
 import '../application/group_providers.dart';
 import 'group_form_sheet.dart';
@@ -33,15 +32,15 @@ class GroupsPage extends ConsumerWidget {
             children: [
               Text(
                 l10n.groupsTitle,
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 16),
               Expanded(
                 child: groups.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (error, _) =>
                       Center(child: Text(l10n.genericErrorMessage('$error'))),
                   data: (groupItems) {
@@ -61,16 +60,15 @@ class GroupsPage extends ConsumerWidget {
                         final count = hostCounts[group.id] ?? 0;
                         final description =
                             group.description?.trim().isNotEmpty == true
-                                ? group.description!
-                                : l10n.groupsNoDescription;
+                            ? group.description!
+                            : l10n.groupsNoDescription;
                         final subtitle =
                             '${l10n.groupsHostCount(count)} • $description';
                         return ListItemCard(
-                          leading: group.name.characters.first.toUpperCase(),
-                          accentColor: parseColor(group.colorHex),
                           title: group.name,
                           subtitle: subtitle,
-                          onTap: () => showGroupFormSheet(context, group: group),
+                          onTap: () =>
+                              showGroupFormSheet(context, group: group),
                           actions: [
                             IconButton(
                               onPressed: () =>
@@ -97,7 +95,10 @@ class GroupsPage extends ConsumerWidget {
   }
 
   Future<void> _deleteGroup(
-      BuildContext context, WidgetRef ref, String groupId) async {
+    BuildContext context,
+    WidgetRef ref,
+    String groupId,
+  ) async {
     final l10n = context.l10n;
     final confirm = await showDialog<bool>(
       context: context,

@@ -1142,6 +1142,30 @@ abstract class AppLocalizations {
   /// **'Choose which panel shows when the terminal opens'**
   String get settingsTerminalSidebarSubtitle;
 
+  /// No description provided for @settingsTerminalHighlight.
+  ///
+  /// In en, this message translates to:
+  /// **'Terminal keyword highlight'**
+  String get settingsTerminalHighlight;
+
+  /// No description provided for @settingsTerminalHighlightSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlight matching keywords in SSH output (separate with comma or space)'**
+  String get settingsTerminalHighlightSubtitle;
+
+  /// No description provided for @settingsTerminalHighlightHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. error, warn, failed'**
+  String get settingsTerminalHighlightHint;
+
+  /// No description provided for @settingsTerminalHighlightHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Current keywords: {keywords}'**
+  String settingsTerminalHighlightHelper(String keywords);
+
   /// No description provided for @settingsDownloadPath.
   ///
   /// In en, this message translates to:

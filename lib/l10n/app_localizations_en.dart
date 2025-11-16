@@ -598,6 +598,21 @@ class AppLocalizationsEn extends AppLocalizations {
       'Choose which panel shows when the terminal opens';
 
   @override
+  String get settingsTerminalHighlight => 'Terminal keyword highlight';
+
+  @override
+  String get settingsTerminalHighlightSubtitle =>
+      'Highlight matching keywords in SSH output (separate with comma or space)';
+
+  @override
+  String get settingsTerminalHighlightHint => 'e.g. error, warn, failed';
+
+  @override
+  String settingsTerminalHighlightHelper(String keywords) {
+    return 'Current keywords: $keywords';
+  }
+
+  @override
   String get settingsDownloadPath => 'Download folder';
 
   @override

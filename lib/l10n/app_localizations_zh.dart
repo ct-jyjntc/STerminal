@@ -586,6 +586,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsTerminalSidebarSubtitle => '进入终端时默认显示哪个面板';
 
   @override
+  String get settingsTerminalHighlight => '终端关键字高亮';
+
+  @override
+  String get settingsTerminalHighlightSubtitle => '在 SSH 输出中高亮指定关键字（使用逗号或空格分隔）';
+
+  @override
+  String get settingsTerminalHighlightHint => '例如：error, warn, failed';
+
+  @override
+  String settingsTerminalHighlightHelper(String keywords) {
+    return '当前关键字：$keywords';
+  }
+
+  @override
   String get settingsDownloadPath => '下载位置';
 
   @override

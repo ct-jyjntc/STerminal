@@ -18,6 +18,14 @@ class SettingsPage extends ConsumerWidget {
     final controller = ref.read(settingsControllerProvider.notifier);
     final l10n = context.l10n;
 
+    List<String> parseKeywords(String value) {
+      return value
+          .split(RegExp(r'[,\n\s]+'))
+          .map((keyword) => keyword.trim())
+          .where((keyword) => keyword.isNotEmpty)
+          .toList();
+    }
+
     final primaryColor = Theme.of(context).colorScheme.primary;
 
     return Scaffold(
@@ -161,9 +169,7 @@ class SettingsPage extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             ListItemCard(
-              leading: l10n.settingsTerminalSidebar
-                  .characters
-                  .first
+              leading: l10n.settingsTerminalSidebar.characters.first
                   .toUpperCase(),
               accentColor: Theme.of(context).colorScheme.primary,
               title: l10n.settingsTerminalSidebar,
@@ -190,8 +196,36 @@ class SettingsPage extends ConsumerWidget {
                       ),
                     ],
                     selected: {settings.terminalSidebarDefaultTab},
-                    onSelectionChanged: (value) => controller
-                        .setTerminalSidebarDefaultTab(value.first),
+                    onSelectionChanged: (value) =>
+                        controller.setTerminalSidebarDefaultTab(value.first),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ListItemCard(
+              leading: l10n.settingsTerminalHighlight.characters.first
+                  .toUpperCase(),
+              accentColor: Theme.of(context).colorScheme.tertiaryContainer,
+              title: l10n.settingsTerminalHighlight,
+              subtitle: l10n.settingsTerminalHighlightSubtitle,
+              actions: [
+                SizedBox(
+                  width: 320,
+                  child: TextFormField(
+                    initialValue: settings.terminalHighlightKeywords.join(', '),
+                    minLines: 1,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      hintText: l10n.settingsTerminalHighlightHint,
+                      helperText: settings.terminalHighlightKeywords.isEmpty
+                          ? null
+                          : l10n.settingsTerminalHighlightHelper(
+                              settings.terminalHighlightKeywords.join(', '),
+                            ),
+                    ),
+                    onChanged: (value) => controller
+                        .setTerminalHighlightKeywords(parseKeywords(value)),
                   ),
                 ),
               ],
@@ -221,20 +255,12 @@ class SettingsPage extends ConsumerWidget {
       await file.writeAsString(data);
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n.settingsExportSuccess(saveLocation.path),
-          ),
-        ),
+        SnackBar(content: Text(l10n.settingsExportSuccess(saveLocation.path))),
       );
     } catch (error) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n.settingsExportFailure('$error'),
-          ),
-        ),
+        SnackBar(content: Text(l10n.settingsExportFailure('$error'))),
       );
     }
   }
@@ -261,10 +287,7 @@ class SettingsPage extends ConsumerWidget {
     if (confirm != true) return;
     final selected = await file_selector.openFile(
       acceptedTypeGroups: [
-        const file_selector.XTypeGroup(
-          label: 'JSON',
-          extensions: ['json'],
-        ),
+        const file_selector.XTypeGroup(label: 'JSON', extensions: ['json']),
       ],
     );
     if (selected == null) return;
@@ -272,19 +295,13 @@ class SettingsPage extends ConsumerWidget {
       final raw = await selected.readAsString();
       await ref.read(backupServiceProvider).importAll(raw);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.settingsImportSuccess),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.settingsImportSuccess)));
     } catch (error) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n.settingsImportFailure('$error'),
-          ),
-        ),
+        SnackBar(content: Text(l10n.settingsImportFailure('$error'))),
       );
     }
   }

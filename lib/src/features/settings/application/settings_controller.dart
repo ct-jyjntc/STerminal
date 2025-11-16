@@ -15,8 +15,8 @@ class SettingsState {
     this.downloadDirectory,
     this.historyLimit = 50,
     this.openConnectionsInNewWindow = false,
-    this.terminalSidebarDefaultTab =
-        TerminalSidebarDefaultTab.commands,
+    this.terminalSidebarDefaultTab = TerminalSidebarDefaultTab.commands,
+    this.terminalHighlightKeywords = const [],
   });
 
   final ThemeMode themeMode;
@@ -25,6 +25,7 @@ class SettingsState {
   final int historyLimit;
   final bool openConnectionsInNewWindow;
   final TerminalSidebarDefaultTab terminalSidebarDefaultTab;
+  final List<String> terminalHighlightKeywords;
 
   SettingsState copyWith({
     ThemeMode? themeMode,
@@ -33,6 +34,7 @@ class SettingsState {
     int? historyLimit,
     bool? openConnectionsInNewWindow,
     TerminalSidebarDefaultTab? terminalSidebarDefaultTab,
+    List<String>? terminalHighlightKeywords,
   }) {
     return SettingsState(
       themeMode: themeMode ?? this.themeMode,
@@ -43,6 +45,8 @@ class SettingsState {
           openConnectionsInNewWindow ?? this.openConnectionsInNewWindow,
       terminalSidebarDefaultTab:
           terminalSidebarDefaultTab ?? this.terminalSidebarDefaultTab,
+      terminalHighlightKeywords:
+          terminalHighlightKeywords ?? this.terminalHighlightKeywords,
     );
   }
 
@@ -53,6 +57,7 @@ class SettingsState {
     'historyLimit': historyLimit,
     'openConnectionsInNewWindow': openConnectionsInNewWindow,
     'terminalSidebarDefaultTab': terminalSidebarDefaultTab.name,
+    'terminalHighlightKeywords': terminalHighlightKeywords,
   };
 
   factory SettingsState.fromJson(Map<String, dynamic> json) {
@@ -67,8 +72,14 @@ class SettingsState {
       historyLimit: json['historyLimit'] as int? ?? 50,
       openConnectionsInNewWindow:
           json['openConnectionsInNewWindow'] as bool? ?? false,
-      terminalSidebarDefaultTab:
-          _parseSidebarDefaultTab(json['terminalSidebarDefaultTab'] as String?),
+      terminalSidebarDefaultTab: _parseSidebarDefaultTab(
+        json['terminalSidebarDefaultTab'] as String?,
+      ),
+      terminalHighlightKeywords:
+          (json['terminalHighlightKeywords'] as List<dynamic>? ?? const [])
+              .whereType<String>()
+              .where((keyword) => keyword.isNotEmpty)
+              .toList(),
     );
   }
 
@@ -79,6 +90,7 @@ class SettingsState {
     historyLimit: 50,
     openConnectionsInNewWindow: false,
     terminalSidebarDefaultTab: TerminalSidebarDefaultTab.commands,
+    terminalHighlightKeywords: [],
   );
 }
 
@@ -120,6 +132,16 @@ class SettingsController extends StateNotifier<SettingsState> {
 
   void setTerminalSidebarDefaultTab(TerminalSidebarDefaultTab value) {
     state = state.copyWith(terminalSidebarDefaultTab: value);
+    _persist();
+  }
+
+  void setTerminalHighlightKeywords(List<String> value) {
+    state = state.copyWith(
+      terminalHighlightKeywords: value
+          .map((item) => item.trim())
+          .where((item) => item.isNotEmpty)
+          .toList(),
+    );
     _persist();
   }
 

@@ -349,6 +349,17 @@
   },
   "settingsTerminalSidebar": "Terminal sidebar default",
   "settingsTerminalSidebarSubtitle": "Choose which panel shows when the terminal opens",
+  "settingsTerminalHighlight": "Terminal keyword highlight",
+  "settingsTerminalHighlightSubtitle": "Highlight matching keywords in SSH output (separate with comma or space)",
+  "settingsTerminalHighlightHint": "e.g. error, warn, failed",
+  "settingsTerminalHighlightHelper": "Current keywords: {keywords}",
+  "@settingsTerminalHighlightHelper": {
+    "placeholders": {
+      "keywords": {
+        "type": "String"
+      }
+    }
+  },
   "settingsDownloadPath": "Download folder",
   "settingsDownloadPathUnset": "Not set",
   "settingsDownloadPathChoose": "Choose folder",

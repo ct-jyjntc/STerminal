@@ -606,7 +606,28 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   }
 
   bool _handleTerminalInput(_TerminalSession session, String data) {
+    var inEscapeSequence = false;
+    var sawCsiPrefix = false;
     for (final codePoint in data.runes) {
+      if (codePoint == 27) {
+        // Start of an ANSI escape sequence (arrow keys, etc.); ignore for history.
+        inEscapeSequence = true;
+        sawCsiPrefix = false;
+        continue;
+      }
+      if (inEscapeSequence) {
+        if (!sawCsiPrefix && codePoint == 91) {
+          // CSI introducer '['.
+          sawCsiPrefix = true;
+          continue;
+        }
+        // CSI sequences end with a final byte in the 64–126 range.
+        if (codePoint >= 64 && codePoint <= 126) {
+          inEscapeSequence = false;
+          sawCsiPrefix = false;
+        }
+        continue;
+      }
       if (codePoint == 9) {
         // Tab pressed: show local completion suggestions instead of sending to host.
         final current = session.commandBuffer.toString();

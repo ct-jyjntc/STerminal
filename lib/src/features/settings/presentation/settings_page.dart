@@ -84,13 +84,14 @@ class SettingsPage extends ConsumerWidget {
                 context,
               ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 32),
+            _buildSectionTitle(context, '外观'),
+            const SizedBox(height: 12),
             ListItemCard(
               title: l10n.settingsAppearance,
               subtitle: l10n.settingsThemeSystem,
               actions: [
-                SizedBox(
-                  width: 260,
+                _buildActionContainer(
                   child: SegmentedButton<ThemeMode>(
                     segments: [
                       ButtonSegment(
@@ -116,14 +117,18 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 32),
+            _buildSectionTitle(context, '连接'),
             const SizedBox(height: 12),
             ListItemCard(
               title: l10n.settingsConfirm,
               subtitle: l10n.settingsConfirmSubtitle,
               actions: [
-                Switch.adaptive(
-                  value: settings.confirmBeforeConnect,
-                  onChanged: controller.toggleConfirmation,
+                _buildActionContainer(
+                  child: Switch.adaptive(
+                    value: settings.confirmBeforeConnect,
+                    onChanged: controller.toggleConfirmation,
+                  ),
                 ),
               ],
             ),
@@ -132,80 +137,22 @@ class SettingsPage extends ConsumerWidget {
               title: l10n.settingsMultiWindow,
               subtitle: l10n.settingsMultiWindowSubtitle,
               actions: [
-                Switch.adaptive(
-                  value: settings.openConnectionsInNewWindow,
-                  onChanged: controller.setOpenConnectionsInNewWindow,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ListItemCard(
-              title: l10n.settingsDownloadPath,
-              subtitle: (settings.downloadDirectory?.isNotEmpty ?? false)
-                  ? settings.downloadDirectory!
-                  : l10n.settingsDownloadPathUnset,
-              actions: [
-                if (settings.downloadDirectory?.isNotEmpty ?? false)
-                  IconButton(
-                    tooltip: l10n.settingsDownloadPathClear,
-                    onPressed: () => controller.setDownloadDirectory(null),
-                    icon: const Icon(Icons.close),
-                  ),
-                FilledButton.icon(
-                  onPressed: () => _pickDownloadDirectory(controller),
-                  icon: const Icon(Icons.folder_open),
-                  label: Text(l10n.settingsDownloadPathChoose),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ListItemCard(
-              title: l10n.settingsExport,
-              subtitle:
-                  '${l10n.settingsExportSubtitle} · ${l10n.settingsImportSubtitle}',
-              actions: [
-                OutlinedButton.icon(
-                  onPressed: () => _importData(context, ref),
-                  icon: const Icon(Icons.file_download_outlined),
-                  label: Text(l10n.settingsImportAction),
-                ),
-                const SizedBox(width: 8),
-                FilledButton.icon(
-                  onPressed: () => _exportData(context, ref),
-                  icon: const Icon(Icons.file_upload_outlined),
-                  label: Text(l10n.settingsExportAction),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ListItemCard(
-              title: l10n.settingsHistoryLimit,
-              subtitle: l10n.settingsHistoryLimitSubtitle(
-                settings.historyLimit,
-              ),
-              actions: [
-                SizedBox(
-                  width: 220,
-                  child: Slider(
-                    value: settings.historyLimit.toDouble(),
-                    min: 10,
-                    max: 200,
-                    divisions: 19,
-                    label: settings.historyLimit.toString(),
-                    onChanged: (value) => controller.setHistoryLimit(
-                      value.round().clamp(10, 200),
-                    ),
+                _buildActionContainer(
+                  child: Switch.adaptive(
+                    value: settings.openConnectionsInNewWindow,
+                    onChanged: controller.setOpenConnectionsInNewWindow,
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 32),
+            _buildSectionTitle(context, '终端'),
             const SizedBox(height: 12),
             ListItemCard(
               title: l10n.settingsTerminalSidebar,
               subtitle: l10n.settingsTerminalSidebarSubtitle,
               actions: [
-                SizedBox(
-                  width: 280,
+                _buildActionContainer(
                   child: SegmentedButton<TerminalSidebarDefaultTab>(
                     segments: [
                       ButtonSegment(
@@ -236,21 +183,117 @@ class SettingsPage extends ConsumerWidget {
               title: l10n.settingsTerminalHighlight,
               subtitle: l10n.settingsTerminalHighlightSubtitle,
               actions: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.edit),
-                      onPressed: showHighlightDialog,
-                      label: Text(l10n.commonEdit),
-                    ),
-                  ],
+                _buildActionContainer(
+                  child: FilledButton.tonalIcon(
+                    icon: const Icon(Icons.edit),
+                    onPressed: showHighlightDialog,
+                    label: Text(l10n.commonEdit),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+            _buildSectionTitle(context, '数据'),
+            const SizedBox(height: 12),
+            ListItemCard(
+              title: l10n.settingsDownloadPath,
+              subtitle: (settings.downloadDirectory?.isNotEmpty ?? false)
+                  ? settings.downloadDirectory!
+                  : l10n.settingsDownloadPathUnset,
+              actions: [
+                _buildActionContainer(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (settings.downloadDirectory?.isNotEmpty ?? false)
+                        IconButton(
+                          tooltip: l10n.settingsDownloadPathClear,
+                          onPressed: () => controller.setDownloadDirectory(null),
+                          icon: const Icon(Icons.close),
+                        ),
+                      FilledButton.tonalIcon(
+                        onPressed: () => _pickDownloadDirectory(controller),
+                        icon: const Icon(Icons.folder_open),
+                        label: Text(l10n.settingsDownloadPathChoose),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
+            ListItemCard(
+              title: l10n.settingsExport,
+              subtitle:
+                  '${l10n.settingsExportSubtitle} · ${l10n.settingsImportSubtitle}',
+              actions: [
+                _buildActionContainer(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      FilledButton.tonalIcon(
+                        onPressed: () => _importData(context, ref),
+                        icon: const Icon(Icons.file_download_outlined),
+                        label: Text(l10n.settingsImportAction),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton.tonalIcon(
+                        onPressed: () => _exportData(context, ref),
+                        icon: const Icon(Icons.file_upload_outlined),
+                        label: Text(l10n.settingsExportAction),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ListItemCard(
+              title: l10n.settingsHistoryLimit,
+              subtitle: l10n.settingsHistoryLimitSubtitle(
+                settings.historyLimit,
+              ),
+              actions: [
+                _buildActionContainer(
+                  child: Slider(
+                    value: settings.historyLimit.toDouble(),
+                    min: 10,
+                    max: 200,
+                    divisions: 19,
+                    label: settings.historyLimit.toString(),
+                    onChanged: (value) => controller.setHistoryLimit(
+                      value.round().clamp(10, 200),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+      ),
+    );
+  }
+
+  Widget _buildActionContainer({required Widget child}) {
+    return SizedBox(
+      width: 300,
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: child,
       ),
     );
   }

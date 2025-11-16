@@ -26,6 +26,50 @@ class SettingsPage extends ConsumerWidget {
           .toList();
     }
 
+    Future<void> showHighlightDialog() async {
+      final textController = TextEditingController(
+        text: settings.terminalHighlightKeywords.join(', '),
+      );
+      final result = await showDialog<List<String>>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: Text(l10n.settingsTerminalHighlight),
+            content: SizedBox(
+              width: 480,
+              child: TextField(
+                controller: textController,
+                autofocus: true,
+                minLines: 3,
+                maxLines: 6,
+                decoration: InputDecoration(
+                  hintText: l10n.settingsTerminalHighlightHint,
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(l10n.commonCancel),
+              ),
+              FilledButton(
+                onPressed: () {
+                  Navigator.of(
+                    dialogContext,
+                  ).pop(parseKeywords(textController.text));
+                },
+                child: Text(l10n.commonConfirm),
+              ),
+            ],
+          );
+        },
+      );
+      textController.dispose();
+      if (result != null) {
+        controller.setTerminalHighlightKeywords(result);
+      }
+    }
+
     final primaryColor = Theme.of(context).colorScheme.primary;
 
     return Scaffold(
@@ -210,23 +254,15 @@ class SettingsPage extends ConsumerWidget {
               title: l10n.settingsTerminalHighlight,
               subtitle: l10n.settingsTerminalHighlightSubtitle,
               actions: [
-                SizedBox(
-                  width: 320,
-                  child: TextFormField(
-                    initialValue: settings.terminalHighlightKeywords.join(', '),
-                    minLines: 1,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      hintText: l10n.settingsTerminalHighlightHint,
-                      helperText: settings.terminalHighlightKeywords.isEmpty
-                          ? null
-                          : l10n.settingsTerminalHighlightHelper(
-                              settings.terminalHighlightKeywords.join(', '),
-                            ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.edit),
+                      onPressed: showHighlightDialog,
+                      label: Text(l10n.commonEdit),
                     ),
-                    onChanged: (value) => controller
-                        .setTerminalHighlightKeywords(parseKeywords(value)),
-                  ),
+                  ],
                 ),
               ],
             ),

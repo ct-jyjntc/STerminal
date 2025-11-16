@@ -18,6 +18,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonConfirm => '确认';
 
   @override
+  String get commonEdit => '编辑';
+
+  @override
   String get commonDelete => '删除';
 
   @override

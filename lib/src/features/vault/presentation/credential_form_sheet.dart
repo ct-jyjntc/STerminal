@@ -10,6 +10,7 @@ Future<void> showCredentialFormSheet(
   Credential? credential,
 }) {
   return showModalBottomSheet(
+    useRootNavigator: true,
     context: context,
     isScrollControlled: true,
     builder: (_) => Padding(

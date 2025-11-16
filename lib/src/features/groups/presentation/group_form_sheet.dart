@@ -11,6 +11,7 @@ Future<void> showGroupFormSheet(
   HostGroup? group,
 }) {
   return showModalBottomSheet(
+    useRootNavigator: true,
     context: context,
     isScrollControlled: true,
     builder: (_) => Padding(

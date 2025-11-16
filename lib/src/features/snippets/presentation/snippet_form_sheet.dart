@@ -10,6 +10,7 @@ Future<void> showSnippetFormSheet(
   Snippet? snippet,
 }) {
   return showModalBottomSheet(
+    useRootNavigator: true,
     context: context,
     isScrollControlled: true,
     builder: (_) => Padding(

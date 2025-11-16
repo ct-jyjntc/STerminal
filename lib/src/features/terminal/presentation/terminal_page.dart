@@ -685,6 +685,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       return;
     }
     final selected = await showModalBottomSheet<String>(
+      useRootNavigator: true,
       context: context,
       showDragHandle: true,
       constraints: const BoxConstraints(maxHeight: 440),

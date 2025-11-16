@@ -248,7 +248,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                       child: Column(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(8, 24, 24, 4),
+                            padding: const EdgeInsets.fromLTRB(0, 12, 24, 4),
                             child: Row(
                               children: [
                                 if (!isStandaloneWindow)
@@ -283,7 +283,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                           Expanded(
                             child: Padding(
                               padding:
-                                  const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                                  const EdgeInsets.fromLTRB(0, 0, 0, 16),
                               child: DecoratedBox(
                                 decoration:
                                     BoxDecoration(color: terminalTheme.background),

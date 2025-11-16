@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sterminal/src/l10n/l10n.dart';
 
 import '../../../../domain/models/host.dart';
+import '../../../../domain/models/proxy_settings.dart';
 import '../../../vault/application/credential_providers.dart';
 import '../../application/hosts_providers.dart';
 
@@ -78,6 +79,11 @@ class HostInspectorPanel extends ConsumerWidget {
                             '${host.address}:${host.port.toString()}'),
                         const SizedBox(height: 8),
                         _InfoRow(
+                          context.l10n.hostInspectorProxy,
+                          _proxyDescription(context, host),
+                        ),
+                        const SizedBox(height: 8),
+                        _InfoRow(
                           context.l10n.hostInspectorCredential,
                           credential == null
                               ? context.l10n.hostMissingCredential
@@ -143,6 +149,21 @@ class _EmptyInspector extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+String _proxyDescription(BuildContext context, Host host) {
+  switch (host.proxy.mode) {
+    case HostProxyMode.none:
+      return context.l10n.hostFormProxyNone;
+    case HostProxyMode.customSocks:
+      final user = host.proxy.username;
+      final authPrefix =
+          (user == null || user.isEmpty) ? '' : '$user@';
+      final hostLabel = host.proxy.host?.isNotEmpty == true
+          ? host.proxy.host
+          : context.l10n.hostFormProxyCustom;
+      return '$authPrefix$hostLabel:${host.proxy.port ?? ''}';
   }
 }
 

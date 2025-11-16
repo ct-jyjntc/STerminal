@@ -4,6 +4,7 @@ import 'package:sterminal/src/l10n/l10n.dart';
 
 import '../../../../core/app_providers.dart';
 import '../../../../domain/models/host.dart';
+import '../../../../domain/models/proxy_settings.dart';
 import '../../../../utils/color_utils.dart';
 import '../../../groups/application/group_providers.dart';
 import '../../../vault/application/credential_providers.dart';
@@ -41,9 +42,14 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
   late final TextEditingController _nameController;
   late final TextEditingController _addressController;
   late final TextEditingController _portController;
+  late final TextEditingController _proxyHostController;
+  late final TextEditingController _proxyPortController;
+  late final TextEditingController _proxyUsernameController;
+  late final TextEditingController _proxyPasswordController;
   String? _selectedGroup;
   String? _selectedCredential;
   late String _colorHex;
+  late HostProxyMode _proxyMode;
   bool _isSaving = false;
 
   static const _colorOptions = [
@@ -66,6 +72,17 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
     _selectedGroup = host?.groupId;
     _selectedCredential = host?.credentialId;
     _colorHex = host?.colorHex ?? _colorOptions.first;
+    final proxy = host?.proxy ?? const HostProxySettings();
+    _proxyMode = proxy.mode == HostProxyMode.customSocks
+        ? HostProxyMode.customSocks
+        : HostProxyMode.none;
+    _proxyHostController = TextEditingController(text: proxy.host);
+    _proxyPortController =
+        TextEditingController(text: proxy.port?.toString() ?? '');
+    _proxyUsernameController =
+        TextEditingController(text: proxy.username ?? '');
+    _proxyPasswordController =
+        TextEditingController(text: proxy.password ?? '');
   }
 
   @override
@@ -73,6 +90,10 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
     _nameController.dispose();
     _addressController.dispose();
     _portController.dispose();
+    _proxyHostController.dispose();
+    _proxyPortController.dispose();
+    _proxyUsernameController.dispose();
+    _proxyPasswordController.dispose();
     super.dispose();
   }
 
@@ -225,6 +246,82 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
               error: (error, _) => Text(l10n.genericErrorMessage('$error')),
             ),
             const SizedBox(height: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DropdownButtonFormField<HostProxyMode>(
+                  value: _proxyMode,
+                  decoration:
+                      InputDecoration(labelText: l10n.hostFormProxyLabel),
+                  items: [
+                    DropdownMenuItem(
+                      value: HostProxyMode.none,
+                      child: Text(l10n.hostFormProxyNone),
+                    ),
+                    DropdownMenuItem(
+                      value: HostProxyMode.customSocks,
+                      child: Text(l10n.hostFormProxyCustom),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value == null) return;
+                    setState(() {
+                      _proxyMode = value;
+                    });
+                  },
+                ),
+                if (_proxyMode == HostProxyMode.customSocks) ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: TextField(
+                          controller: _proxyHostController,
+                          decoration: InputDecoration(
+                            labelText: l10n.hostFormProxyHost,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: _proxyPortController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: l10n.hostFormProxyPort,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _proxyUsernameController,
+                          decoration: InputDecoration(
+                            labelText: l10n.hostFormProxyUsername,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: _proxyPasswordController,
+                          decoration: InputDecoration(
+                            labelText: l10n.hostFormProxyPassword,
+                          ),
+                          obscureText: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 24),
             Row(
               children: [
                 Text(l10n.hostFormAccentLabel),
@@ -275,6 +372,11 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
     );
   }
 
+  String? _nullableText(TextEditingController controller) {
+    final value = controller.text.trim();
+    return value.isEmpty ? null : value;
+  }
+
   Future<void> _submit() async {
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
@@ -300,6 +402,25 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
     final repo = ref.read(hostsRepositoryProvider);
     final uuid = ref.read(uuidProvider);
     final host = widget.host;
+    final customProxy = _proxyMode == HostProxyMode.customSocks
+        ? HostProxySettings(
+            mode: _proxyMode,
+            host: _nullableText(_proxyHostController),
+            port: int.tryParse(_proxyPortController.text.trim()),
+            username: _nullableText(_proxyUsernameController),
+            password: _nullableText(_proxyPasswordController),
+          )
+        : HostProxySettings(mode: _proxyMode);
+    if (_proxyMode == HostProxyMode.customSocks &&
+        (customProxy.host?.isEmpty ?? true || customProxy.port == null)) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.hostFormProxyValidation)),
+      );
+      setState(() {
+        _isSaving = false;
+      });
+      return;
+    }
     final updatedHost = host?.copyWith(
           name: _nameController.text.trim(),
           address: _addressController.text.trim(),
@@ -308,6 +429,7 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
           groupId: _selectedGroup,
           colorHex: _colorHex,
           updatedAt: now,
+          proxy: customProxy,
         ) ??
         Host(
           id: uuid.v4(),
@@ -321,6 +443,7 @@ class _HostFormSheetState extends ConsumerState<HostFormSheet> {
           createdAt: now,
           updatedAt: now,
           description: null,
+          proxy: customProxy,
         );
     await repo.upsert(updatedHost);
     if (!mounted) return;

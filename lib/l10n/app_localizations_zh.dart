@@ -73,6 +73,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hostEdit => '编辑';
 
   @override
+  String get hostInspectorProxy => '代理';
+
+  @override
   String get hostDeleteTooltip => '删除主机';
 
   @override
@@ -133,6 +136,33 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get hostFormAccentLabel => '颜色';
+
+  @override
+  String get hostFormProxyLabel => '代理';
+
+  @override
+  String get hostFormProxyNone => '不使用代理';
+
+  @override
+  String get hostFormProxySystem => '使用系统代理';
+
+  @override
+  String get hostFormProxyCustom => '自定义 SOCKS 代理';
+
+  @override
+  String get hostFormProxyHost => '代理地址';
+
+  @override
+  String get hostFormProxyPort => '代理端口';
+
+  @override
+  String get hostFormProxyUsername => '用户名（可选）';
+
+  @override
+  String get hostFormProxyPassword => '密码（可选）';
+
+  @override
+  String get hostFormProxyValidation => '自定义 SOCKS 代理需要填写地址和端口。';
 
   @override
   String get hostFormSave => '保存主机';
@@ -377,6 +407,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsExportCancelled => '已取消导出';
+
+  @override
+  String get terminalProxyNotFound => '未从系统中检测到 SOCKS 代理。';
 
   @override
   String genericErrorMessage(String error) {

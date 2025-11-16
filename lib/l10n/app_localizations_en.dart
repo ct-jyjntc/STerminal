@@ -73,6 +73,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hostEdit => 'Edit';
 
   @override
+  String get hostInspectorProxy => 'Proxy';
+
+  @override
   String get hostDeleteTooltip => 'Delete host';
 
   @override
@@ -133,6 +136,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hostFormAccentLabel => 'Accent';
+
+  @override
+  String get hostFormProxyLabel => 'Proxy';
+
+  @override
+  String get hostFormProxyNone => 'No proxy';
+
+  @override
+  String get hostFormProxySystem => 'System proxy';
+
+  @override
+  String get hostFormProxyCustom => 'Custom SOCKS proxy';
+
+  @override
+  String get hostFormProxyHost => 'Proxy host';
+
+  @override
+  String get hostFormProxyPort => 'Proxy port';
+
+  @override
+  String get hostFormProxyUsername => 'Proxy username (optional)';
+
+  @override
+  String get hostFormProxyPassword => 'Proxy password (optional)';
+
+  @override
+  String get hostFormProxyValidation =>
+      'Proxy host and port are required for custom SOCKS proxy.';
 
   @override
   String get hostFormSave => 'Save host';
@@ -385,6 +416,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsExportCancelled => 'Export cancelled';
+
+  @override
+  String get terminalProxyNotFound =>
+      'No SOCKS proxy found in system configuration.';
 
   @override
   String genericErrorMessage(String error) {

@@ -218,6 +218,12 @@ abstract class AppLocalizations {
   /// **'Edit'**
   String get hostEdit;
 
+  /// No description provided for @hostInspectorProxy.
+  ///
+  /// In en, this message translates to:
+  /// **'Proxy'**
+  String get hostInspectorProxy;
+
   /// No description provided for @hostDeleteTooltip.
   ///
   /// In en, this message translates to:
@@ -337,6 +343,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Accent'**
   String get hostFormAccentLabel;
+
+  /// No description provided for @hostFormProxyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Proxy'**
+  String get hostFormProxyLabel;
+
+  /// No description provided for @hostFormProxyNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No proxy'**
+  String get hostFormProxyNone;
+
+  /// No description provided for @hostFormProxySystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System proxy'**
+  String get hostFormProxySystem;
+
+  /// No description provided for @hostFormProxyCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom SOCKS proxy'**
+  String get hostFormProxyCustom;
+
+  /// No description provided for @hostFormProxyHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Proxy host'**
+  String get hostFormProxyHost;
+
+  /// No description provided for @hostFormProxyPort.
+  ///
+  /// In en, this message translates to:
+  /// **'Proxy port'**
+  String get hostFormProxyPort;
+
+  /// No description provided for @hostFormProxyUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Proxy username (optional)'**
+  String get hostFormProxyUsername;
+
+  /// No description provided for @hostFormProxyPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Proxy password (optional)'**
+  String get hostFormProxyPassword;
+
+  /// No description provided for @hostFormProxyValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Proxy host and port are required for custom SOCKS proxy.'**
+  String get hostFormProxyValidation;
 
   /// No description provided for @hostFormSave.
   ///
@@ -787,6 +847,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Export cancelled'**
   String get settingsExportCancelled;
+
+  /// No description provided for @terminalProxyNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No SOCKS proxy found in system configuration.'**
+  String get terminalProxyNotFound;
 
   /// No description provided for @genericErrorMessage.
   ///

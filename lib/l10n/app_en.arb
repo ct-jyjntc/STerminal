@@ -34,6 +34,7 @@
   "hostCreateButton": "Create host",
   "hostConnect": "Connect",
   "hostEdit": "Edit",
+  "hostInspectorProxy": "Proxy",
   "hostDeleteTooltip": "Delete host",
   "hostDeleteTitle": "Delete host",
   "hostDeleteMessage": "Are you sure you want to remove {name}?",
@@ -61,6 +62,15 @@
   "hostFormGroupLabel": "Group",
   "hostFormNoGroupOption": "No group",
   "hostFormAccentLabel": "Accent",
+  "hostFormProxyLabel": "Proxy",
+  "hostFormProxyNone": "No proxy",
+  "hostFormProxySystem": "System proxy",
+  "hostFormProxyCustom": "Custom SOCKS proxy",
+  "hostFormProxyHost": "Proxy host",
+  "hostFormProxyPort": "Proxy port",
+  "hostFormProxyUsername": "Proxy username (optional)",
+  "hostFormProxyPassword": "Proxy password (optional)",
+  "hostFormProxyValidation": "Proxy host and port are required for custom SOCKS proxy.",
   "hostFormSave": "Save host",
   "hostFormValidation": "Name, host, and credential are required.",
   "hostFormInlineToggle": "Enter credential manually",
@@ -185,6 +195,7 @@
     }
   },
   "settingsExportCancelled": "Export cancelled",
+  "terminalProxyNotFound": "No SOCKS proxy found in system configuration.",
   "genericErrorMessage": "Error: {error}",
   "@genericErrorMessage": {
     "placeholders": {

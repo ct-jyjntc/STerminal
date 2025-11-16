@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_monaco/flutter_monaco.dart';
+import 'package:socks5_proxy/socks_client.dart';
 import 'package:sterminal/src/l10n/l10n.dart';
 import 'package:xterm/xterm.dart';
 
@@ -15,6 +16,7 @@ import 'package:sterminal/l10n/app_localizations.dart';
 import '../../../core/app_providers.dart';
 import '../../../domain/models/credential.dart';
 import '../../../domain/models/host.dart';
+import '../../../domain/models/proxy_settings.dart';
 import '../../../domain/models/snippet.dart';
 import '../../connections/application/hosts_providers.dart';
 import '../application/command_history_service.dart';
@@ -295,7 +297,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     _terminal.buffer.clear();
     _terminal.write('${l10n.terminalConnectingMessage(host.address)}\r\n');
     try {
-      final socket = await SSHSocket.connect(host.address, host.port);
+      final socket = await _createSocket(host, l10n);
       final identities = <SSHKeyPair>[];
       if (credential.authKind == CredentialAuthKind.keyPair &&
           (credential.privateKey?.isNotEmpty ?? false)) {
@@ -360,6 +362,58 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       }
       _terminal.write('\r\n$message\r\n');
     }
+  }
+
+  Future<SSHSocket> _createSocket(Host host, AppLocalizations l10n) async {
+    final resolvedProxy = await _resolveProxy(host, l10n);
+    if (resolvedProxy == null) {
+      return SSHSocket.connect(host.address, host.port);
+    }
+    final proxySettings = ProxySettings(
+      _toInternetAddress(resolvedProxy.host),
+      resolvedProxy.port,
+      username: resolvedProxy.username?.isEmpty ?? true
+          ? null
+          : resolvedProxy.username,
+      password: resolvedProxy.password?.isEmpty ?? true
+          ? null
+          : resolvedProxy.password,
+    );
+    final targetAddress = _toInternetAddress(host.address);
+    final Socket socket = await SocksTCPClient.connect(
+      [proxySettings],
+      targetAddress,
+      host.port,
+    );
+    return _SocksSSHSocket(socket);
+  }
+
+  Future<_ResolvedProxy?> _resolveProxy(
+    Host host,
+    AppLocalizations l10n,
+  ) async {
+    switch (host.proxy.mode) {
+      case HostProxyMode.none:
+        return null;
+      case HostProxyMode.customSocks:
+        final proxyHost = host.proxy.host;
+        final proxyPort = host.proxy.port;
+        if (proxyHost == null || proxyPort == null) {
+          throw Exception(l10n.hostFormProxyValidation);
+        }
+        return _ResolvedProxy(
+          host: proxyHost,
+          port: proxyPort,
+          username: host.proxy.username,
+          password: host.proxy.password,
+        );
+    }
+  }
+
+  InternetAddress _toInternetAddress(String host) {
+    final parsed = InternetAddress.tryParse(host);
+    if (parsed != null) return parsed;
+    return InternetAddress(host, type: InternetAddressType.unix);
   }
 
   void _onData(Uint8List data) {
@@ -1742,6 +1796,45 @@ class _DisplayFileNode {
 
   final _FileNode node;
   final int depth;
+}
+
+class _ResolvedProxy {
+  const _ResolvedProxy({
+    required this.host,
+    required this.port,
+    this.username,
+    this.password,
+  });
+
+  final String host;
+  final int port;
+  final String? username;
+  final String? password;
+}
+
+class _SocksSSHSocket implements SSHSocket {
+  _SocksSSHSocket(this._socket);
+
+  final Socket _socket;
+
+  @override
+  Stream<Uint8List> get stream => _socket;
+
+  @override
+  StreamSink<List<int>> get sink => _socket;
+
+  @override
+  Future<void> get done => _socket.done;
+
+  @override
+  Future<void> close() async {
+    await _socket.close();
+  }
+
+  @override
+  void destroy() {
+    _socket.destroy();
+  }
 }
 
 const _sentinel = Object();

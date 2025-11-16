@@ -1,4 +1,5 @@
 import 'identifiable.dart';
+import 'proxy_settings.dart';
 
 class Host implements Identifiable {
   const Host({
@@ -14,6 +15,7 @@ class Host implements Identifiable {
     required this.updatedAt,
     this.description,
     this.lastConnectedAt,
+    this.proxy = const HostProxySettings(),
   });
 
   @override
@@ -29,6 +31,7 @@ class Host implements Identifiable {
   final DateTime updatedAt;
   final String? description;
   final DateTime? lastConnectedAt;
+  final HostProxySettings proxy;
 
   Host copyWith({
     String? id,
@@ -43,6 +46,7 @@ class Host implements Identifiable {
     DateTime? updatedAt,
     String? description,
     DateTime? lastConnectedAt,
+    HostProxySettings? proxy,
   }) {
     return Host(
       id: id ?? this.id,
@@ -57,6 +61,7 @@ class Host implements Identifiable {
       updatedAt: updatedAt ?? this.updatedAt,
       description: description ?? this.description,
       lastConnectedAt: lastConnectedAt ?? this.lastConnectedAt,
+      proxy: proxy ?? this.proxy,
     );
   }
 
@@ -80,6 +85,11 @@ class Host implements Identifiable {
       lastConnectedAt: json['lastConnectedAt'] == null
           ? null
           : DateTime.tryParse(json['lastConnectedAt'] as String),
+      proxy: json['proxy'] == null
+          ? const HostProxySettings()
+          : HostProxySettings.fromJson(
+              (json['proxy'] as Map).cast<String, dynamic>(),
+            ),
     );
   }
 
@@ -96,5 +106,6 @@ class Host implements Identifiable {
         'updatedAt': updatedAt.toIso8601String(),
         'description': description,
         'lastConnectedAt': lastConnectedAt?.toIso8601String(),
+        'proxy': proxy.toJson(),
       };
 }

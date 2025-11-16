@@ -45,6 +45,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get connectionsNewHost => 'New host';
 
   @override
+  String get connectionsEmpty => 'No connections yet';
+
+  @override
   String get connectionsSearchHint => 'Search by host, tag or address';
 
   @override
@@ -196,6 +199,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupsNew => 'New group';
+
+  @override
+  String get groupsEmpty => 'No groups yet';
 
   @override
   String get groupsNoDescription => 'No description';

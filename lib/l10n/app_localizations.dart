@@ -170,6 +170,12 @@ abstract class AppLocalizations {
   /// **'New host'**
   String get connectionsNewHost;
 
+  /// No description provided for @connectionsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No connections yet'**
+  String get connectionsEmpty;
+
   /// No description provided for @connectionsSearchHint.
   ///
   /// In en, this message translates to:
@@ -457,6 +463,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New group'**
   String get groupsNew;
+
+  /// No description provided for @groupsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No groups yet'**
+  String get groupsEmpty;
 
   /// No description provided for @groupsNoDescription.
   ///

@@ -12,6 +12,7 @@
   "commonReplaceAll": "Replace all",
   "connectionsTitle": "Connections",
   "connectionsNewHost": "New host",
+  "connectionsEmpty": "No connections yet",
   "connectionsSearchHint": "Search by host, tag or address",
   "filterAll": "All",
   "filterUngrouped": "Ungrouped",
@@ -81,6 +82,7 @@
   "hostFormCredentialMissing": "Please select or create a credential first.",
   "groupsTitle": "Groups",
   "groupsNew": "New group",
+  "groupsEmpty": "No groups yet",
   "groupsNoDescription": "No description",
   "groupsHostCount": "{count, plural, one {{count} host} other {{count} hosts}}",
   "@groupsHostCount": {

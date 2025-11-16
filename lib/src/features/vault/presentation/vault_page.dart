@@ -36,7 +36,7 @@ class VaultPage extends ConsumerWidget {
                     .headlineMedium
                     ?.copyWith(fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               Expanded(
                 child: credentials.when(
                   loading: () => const Center(child: CircularProgressIndicator()),
@@ -60,11 +60,13 @@ class VaultPage extends ConsumerWidget {
                               showCredentialFormSheet(context, credential: credential),
                           actions: [
                             IconButton(
+                              tooltip: l10n.commonEdit,
                               onPressed: () =>
                                   showCredentialFormSheet(context, credential: credential),
                               icon: const Icon(Icons.edit_outlined),
                             ),
                             IconButton(
+                              tooltip: l10n.commonDelete,
                               onPressed: () =>
                                   _deleteCredential(context, ref, credential.id),
                               icon: const Icon(Icons.delete_outline),

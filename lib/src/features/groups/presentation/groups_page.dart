@@ -36,7 +36,7 @@ class GroupsPage extends ConsumerWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               Expanded(
                 child: groups.when(
                   loading: () =>
@@ -44,6 +44,9 @@ class GroupsPage extends ConsumerWidget {
                   error: (error, _) =>
                       Center(child: Text(l10n.genericErrorMessage('$error'))),
                   data: (groupItems) {
+                    if (groupItems.isEmpty) {
+                      return Center(child: Text(l10n.groupsEmpty));
+                    }
                     final hostCounts = <String, int>{};
                     final hostList = hosts.value ?? [];
                     for (final host in hostList) {
@@ -71,11 +74,13 @@ class GroupsPage extends ConsumerWidget {
                               showGroupFormSheet(context, group: group),
                           actions: [
                             IconButton(
+                              tooltip: l10n.commonEdit,
                               onPressed: () =>
                                   showGroupFormSheet(context, group: group),
                               icon: const Icon(Icons.edit_outlined),
                             ),
                             IconButton(
+                              tooltip: l10n.commonDelete,
                               onPressed: () =>
                                   _deleteGroup(context, ref, group.id),
                               icon: const Icon(Icons.delete_outline),

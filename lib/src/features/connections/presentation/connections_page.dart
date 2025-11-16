@@ -49,6 +49,9 @@ class ConnectionsPage extends ConsumerWidget {
                   error: (error, _) =>
                       Center(child: Text(l10n.connectionsLoadError('$error'))),
                   data: (hostItems) {
+                    if (hostItems.isEmpty) {
+                      return Center(child: Text(l10n.connectionsEmpty));
+                    }
                     final credentialMap = {
                       for (final credential in credentials.value ?? [])
                         credential.id: credential,
@@ -241,21 +244,15 @@ class _ToolbarState extends ConsumerState<_Toolbar> {
             context,
           ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.search),
-                  hintText: l10n.connectionsSearchHint,
-                ),
-                onChanged: (value) =>
-                    ref.read(hostSearchQueryProvider.notifier).state = value,
-              ),
-            ),
-          ],
+        const SizedBox(height: 24),
+        TextField(
+          controller: _searchController,
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.search),
+            hintText: l10n.connectionsSearchHint,
+          ),
+          onChanged: (value) =>
+              ref.read(hostSearchQueryProvider.notifier).state = value,
         ),
         const SizedBox(height: 16),
         groupsAsync.when(

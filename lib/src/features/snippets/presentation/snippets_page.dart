@@ -36,7 +36,7 @@ class SnippetsPage extends ConsumerWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               Expanded(
                 child: snippets.when(
                   loading: () =>
@@ -128,11 +128,20 @@ class _SnippetRow extends StatelessWidget {
       subtitle: snippet.command,
       actions: [
         IconButton(
+          tooltip: '复制命令',
           onPressed: onCopy,
           icon: const Icon(Icons.copy_all_outlined),
         ),
-        IconButton(onPressed: onEdit, icon: const Icon(Icons.edit_outlined)),
-        IconButton(onPressed: onDelete, icon: const Icon(Icons.delete_outline)),
+        IconButton(
+          tooltip: '编辑',
+          onPressed: onEdit,
+          icon: const Icon(Icons.edit_outlined),
+        ),
+        IconButton(
+          tooltip: '删除',
+          onPressed: onDelete,
+          icon: const Icon(Icons.delete_outline),
+        ),
       ],
     );
   }

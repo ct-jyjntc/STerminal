@@ -45,6 +45,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get connectionsNewHost => '新建主机';
 
   @override
+  String get connectionsEmpty => '暂无主机连接';
+
+  @override
   String get connectionsSearchHint => '按主机、标签或地址搜索';
 
   @override
@@ -193,6 +196,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get groupsNew => '新建分组';
+
+  @override
+  String get groupsEmpty => '暂无分组';
 
   @override
   String get groupsNoDescription => '暂无描述';

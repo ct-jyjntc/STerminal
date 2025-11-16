@@ -1130,6 +1130,18 @@ abstract class AppLocalizations {
   /// **'Keep up to {count} commands'**
   String settingsHistoryLimitSubtitle(int count);
 
+  /// No description provided for @settingsTerminalSidebar.
+  ///
+  /// In en, this message translates to:
+  /// **'Terminal sidebar default'**
+  String get settingsTerminalSidebar;
+
+  /// No description provided for @settingsTerminalSidebarSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose which panel shows when the terminal opens'**
+  String get settingsTerminalSidebarSubtitle;
+
   /// No description provided for @settingsDownloadPath.
   ///
   /// In en, this message translates to:

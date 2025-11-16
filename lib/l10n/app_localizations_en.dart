@@ -591,6 +591,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get settingsTerminalSidebar => 'Terminal sidebar default';
+
+  @override
+  String get settingsTerminalSidebarSubtitle =>
+      'Choose which panel shows when the terminal opens';
+
+  @override
   String get settingsDownloadPath => 'Download folder';
 
   @override

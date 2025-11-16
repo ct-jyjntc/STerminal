@@ -160,6 +160,43 @@ class SettingsPage extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 12),
+            ListItemCard(
+              leading: l10n.settingsTerminalSidebar
+                  .characters
+                  .first
+                  .toUpperCase(),
+              accentColor: Theme.of(context).colorScheme.primary,
+              title: l10n.settingsTerminalSidebar,
+              subtitle: l10n.settingsTerminalSidebarSubtitle,
+              actions: [
+                SizedBox(
+                  width: 280,
+                  child: SegmentedButton<TerminalSidebarDefaultTab>(
+                    segments: [
+                      ButtonSegment(
+                        value: TerminalSidebarDefaultTab.files,
+                        label: Text(l10n.terminalSidebarFiles),
+                        icon: const Icon(Icons.folder_outlined),
+                      ),
+                      ButtonSegment(
+                        value: TerminalSidebarDefaultTab.commands,
+                        label: Text(l10n.terminalSidebarCommands),
+                        icon: const Icon(Icons.code_outlined),
+                      ),
+                      ButtonSegment(
+                        value: TerminalSidebarDefaultTab.history,
+                        label: Text(l10n.terminalSidebarHistory),
+                        icon: const Icon(Icons.history),
+                      ),
+                    ],
+                    selected: {settings.terminalSidebarDefaultTab},
+                    onSelectionChanged: (value) => controller
+                        .setTerminalSidebarDefaultTab(value.first),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
           ],
         ),
       ),

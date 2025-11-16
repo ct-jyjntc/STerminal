@@ -92,6 +92,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   void initState() {
     super.initState();
     _historyService = ref.read(commandHistoryServiceProvider);
+    _applyDefaultSidebarTab();
     _loadHistory();
   }
 
@@ -111,6 +112,16 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       (session) => session.id == targetId,
       orElse: () => _sessions.first,
     );
+  }
+
+  void _applyDefaultSidebarTab() {
+    final pref =
+        ref.read(settingsControllerProvider).terminalSidebarDefaultTab;
+    final mapped = TerminalSidebarTab.values.firstWhere(
+      (tab) => tab.name == pref.name,
+      orElse: () => TerminalSidebarTab.commands,
+    );
+    _sidebarTab = mapped;
   }
 
   void _focusSession(_TerminalSession session) {

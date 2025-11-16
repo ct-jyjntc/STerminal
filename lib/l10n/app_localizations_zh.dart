@@ -580,6 +580,12 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get settingsTerminalSidebar => '终端侧边栏默认标签';
+
+  @override
+  String get settingsTerminalSidebarSubtitle => '进入终端时默认显示哪个面板';
+
+  @override
   String get settingsDownloadPath => '下载位置';
 
   @override

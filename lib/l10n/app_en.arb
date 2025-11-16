@@ -347,6 +347,8 @@
       }
     }
   },
+  "settingsTerminalSidebar": "Terminal sidebar default",
+  "settingsTerminalSidebarSubtitle": "Choose which panel shows when the terminal opens",
   "settingsDownloadPath": "Download folder",
   "settingsDownloadPathUnset": "Not set",
   "settingsDownloadPathChoose": "Choose folder",

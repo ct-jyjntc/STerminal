@@ -15,6 +15,8 @@ class SettingsState {
     this.downloadDirectory,
     this.historyLimit = 50,
     this.openConnectionsInNewWindow = false,
+    this.terminalSidebarDefaultTab =
+        TerminalSidebarDefaultTab.commands,
   });
 
   final ThemeMode themeMode;
@@ -22,6 +24,7 @@ class SettingsState {
   final String? downloadDirectory;
   final int historyLimit;
   final bool openConnectionsInNewWindow;
+  final TerminalSidebarDefaultTab terminalSidebarDefaultTab;
 
   SettingsState copyWith({
     ThemeMode? themeMode,
@@ -29,6 +32,7 @@ class SettingsState {
     String? downloadDirectory,
     int? historyLimit,
     bool? openConnectionsInNewWindow,
+    TerminalSidebarDefaultTab? terminalSidebarDefaultTab,
   }) {
     return SettingsState(
       themeMode: themeMode ?? this.themeMode,
@@ -37,6 +41,8 @@ class SettingsState {
       historyLimit: historyLimit ?? this.historyLimit,
       openConnectionsInNewWindow:
           openConnectionsInNewWindow ?? this.openConnectionsInNewWindow,
+      terminalSidebarDefaultTab:
+          terminalSidebarDefaultTab ?? this.terminalSidebarDefaultTab,
     );
   }
 
@@ -46,6 +52,7 @@ class SettingsState {
     'downloadDirectory': downloadDirectory,
     'historyLimit': historyLimit,
     'openConnectionsInNewWindow': openConnectionsInNewWindow,
+    'terminalSidebarDefaultTab': terminalSidebarDefaultTab.name,
   };
 
   factory SettingsState.fromJson(Map<String, dynamic> json) {
@@ -60,6 +67,8 @@ class SettingsState {
       historyLimit: json['historyLimit'] as int? ?? 50,
       openConnectionsInNewWindow:
           json['openConnectionsInNewWindow'] as bool? ?? false,
+      terminalSidebarDefaultTab:
+          _parseSidebarDefaultTab(json['terminalSidebarDefaultTab'] as String?),
     );
   }
 
@@ -69,6 +78,7 @@ class SettingsState {
     downloadDirectory: null,
     historyLimit: 50,
     openConnectionsInNewWindow: false,
+    terminalSidebarDefaultTab: TerminalSidebarDefaultTab.commands,
   );
 }
 
@@ -108,6 +118,11 @@ class SettingsController extends StateNotifier<SettingsState> {
     _persist();
   }
 
+  void setTerminalSidebarDefaultTab(TerminalSidebarDefaultTab value) {
+    state = state.copyWith(terminalSidebarDefaultTab: value);
+    _persist();
+  }
+
   void replaceAll(SettingsState newState) {
     state = newState;
     _persist();
@@ -123,3 +138,12 @@ final settingsControllerProvider =
       final prefs = ref.watch(sharedPreferencesProvider);
       return SettingsController(prefs);
     });
+
+enum TerminalSidebarDefaultTab { files, commands, history }
+
+TerminalSidebarDefaultTab _parseSidebarDefaultTab(String? value) {
+  return TerminalSidebarDefaultTab.values.firstWhere(
+    (tab) => tab.name == value,
+    orElse: () => TerminalSidebarDefaultTab.commands,
+  );
+}

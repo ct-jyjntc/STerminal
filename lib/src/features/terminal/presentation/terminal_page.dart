@@ -435,11 +435,12 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
-            child: SizedBox(
-              width: double.infinity,
-              child: IconButton.filledTonal(
+            child: Center(
+              child: _CapsuleIconButton(
+                icon: Icons.add,
+                background: colorScheme.primaryContainer,
+                foreground: colorScheme.onPrimaryContainer,
                 onPressed: () => _addSession(host, credential),
-                icon: const Icon(Icons.add),
               ),
             ),
           ),
@@ -2195,5 +2196,38 @@ class _SessionRailIcon extends StatelessWidget {
 
   Widget _buildIcon() {
     return Icon(icon, color: color);
+  }
+}
+
+class _CapsuleIconButton extends StatelessWidget {
+  const _CapsuleIconButton({
+    required this.icon,
+    required this.background,
+    required this.foreground,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final Color background;
+  final Color foreground;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: background,
+      shape: const StadiumBorder(),
+      child: InkWell(
+        customBorder: const StadiumBorder(),
+        onTap: onPressed,
+        child: SizedBox(
+          width: 58,
+          height: 32,
+          child: Center(
+            child: Icon(icon, color: foreground, size: 22),
+          ),
+        ),
+      ),
+    );
   }
 }

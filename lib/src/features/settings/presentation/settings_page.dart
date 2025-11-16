@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:file_selector/file_selector.dart' as file_selector;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sterminal/src/l10n/l10n.dart';
 import 'package:sterminal/src/widgets/list_item_card.dart';
 
+import '../application/backup_service.dart';
 import '../application/settings_controller.dart';
 
 class SettingsPage extends ConsumerWidget {
@@ -113,6 +116,27 @@ class SettingsPage extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             ListItemCard(
+              leading: l10n.settingsExport.characters.first.toUpperCase(),
+              accentColor: Theme.of(context).colorScheme.secondary,
+              title: l10n.settingsExport,
+              subtitle:
+                  '${l10n.settingsExportSubtitle} · ${l10n.settingsImportSubtitle}',
+              actions: [
+                OutlinedButton.icon(
+                  onPressed: () => _importData(context, ref),
+                  icon: const Icon(Icons.file_download_outlined),
+                  label: Text(l10n.settingsImportAction),
+                ),
+                const SizedBox(width: 8),
+                FilledButton.icon(
+                  onPressed: () => _exportData(context, ref),
+                  icon: const Icon(Icons.file_upload_outlined),
+                  label: Text(l10n.settingsExportAction),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ListItemCard(
               leading: l10n.settingsHistoryLimit.characters.first.toUpperCase(),
               accentColor: Theme.of(context).colorScheme.primaryContainer,
               title: l10n.settingsHistoryLimit,
@@ -145,5 +169,86 @@ class SettingsPage extends ConsumerWidget {
   Future<void> _pickDownloadDirectory(SettingsController controller) async {
     final selected = await file_selector.getDirectoryPath();
     controller.setDownloadDirectory(selected);
+  }
+
+  Future<void> _exportData(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
+    final saveLocation = await file_selector.getSaveLocation(
+      suggestedName: 'sterminal-backup.json',
+    );
+    if (saveLocation == null) return;
+    try {
+      final data = await ref.read(backupServiceProvider).exportAll();
+      final file = File(saveLocation.path);
+      await file.parent.create(recursive: true);
+      await file.writeAsString(data);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.settingsExportSuccess(saveLocation.path),
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.settingsExportFailure('$error'),
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _importData(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.settingsImportConfirmTitle),
+        content: Text(l10n.settingsImportConfirmMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.settingsImportAction),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    final selected = await file_selector.openFile(
+      acceptedTypeGroups: [
+        const file_selector.XTypeGroup(
+          label: 'JSON',
+          extensions: ['json'],
+        ),
+      ],
+    );
+    if (selected == null) return;
+    try {
+      final raw = await selected.readAsString();
+      await ref.read(backupServiceProvider).importAll(raw);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.settingsImportSuccess),
+        ),
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.settingsImportFailure('$error'),
+          ),
+        ),
+      );
+    }
   }
 }

@@ -108,6 +108,11 @@ class SettingsController extends StateNotifier<SettingsState> {
     _persist();
   }
 
+  void replaceAll(SettingsState newState) {
+    state = newState;
+    _persist();
+  }
+
   void _persist() {
     _prefs.setString(_settingsKey, jsonEncode(state.toJson()));
   }

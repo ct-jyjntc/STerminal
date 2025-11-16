@@ -396,7 +396,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       ),
       child: Column(
         children: [
-          SizedBox(height: isStandaloneWindow ? 48 : 48),
+          SizedBox(height: isStandaloneWindow ? 56 : 56),
           Expanded(
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 12),

@@ -386,7 +386,6 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     required bool isStandaloneWindow,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
-    final selectedIndex = _sessions.indexWhere((s) => s.id == activeSession.id);
     return Container(
       width: 88,
       decoration: BoxDecoration(
@@ -399,38 +398,33 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
         children: [
           SizedBox(height: isStandaloneWindow ? 48 : 48),
           Expanded(
-            child: NavigationRail(
-              selectedIndex: selectedIndex >= 0 ? selectedIndex : 0,
-              backgroundColor: Colors.transparent,
-              groupAlignment: -1,
-              labelType: NavigationRailLabelType.all,
-              onDestinationSelected: (index) {
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              itemCount: _sessions.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
                 final session = _sessions[index];
-                setState(() {
-                  _activeSessionId = session.id;
-                });
-                _focusSession(session);
+                final selected = session.id == activeSession.id;
+                return _SessionRailIcon(
+                  icon: Icons.terminal,
+                  color: selected
+                      ? colorScheme.onPrimaryContainer
+                      : colorScheme.onSurfaceVariant,
+                  background: selected
+                      ? colorScheme.primaryContainer
+                      : colorScheme.surfaceVariant.withOpacity(0.6),
+                  label: session.displayName,
+                  onTap: () {
+                    setState(() {
+                      _activeSessionId = session.id;
+                    });
+                    _focusSession(session);
+                  },
+                  onClose: _sessions.length > 1
+                      ? () => _closeSession(session.id)
+                      : null,
+                );
               },
-              destinations: [
-                for (final session in _sessions)
-                  NavigationRailDestination(
-                    icon: _SessionRailIcon(
-                      icon: Icons.terminal,
-                      color: colorScheme.onSurfaceVariant,
-                      onClose: _sessions.length > 1
-                          ? () => _closeSession(session.id)
-                          : null,
-                    ),
-                    selectedIcon: _SessionRailIcon(
-                      icon: Icons.terminal,
-                      color: colorScheme.onPrimaryContainer,
-                      onClose: _sessions.length > 1
-                          ? () => _closeSession(session.id)
-                          : null,
-                    ),
-                    label: Text(session.displayName),
-                  ),
-              ],
             ),
           ),
           Padding(
@@ -2174,28 +2168,48 @@ class _SessionRailIcon extends StatelessWidget {
   const _SessionRailIcon({
     required this.icon,
     required this.color,
+    required this.background,
+    required this.onTap,
     this.onClose,
+    required this.label,
   });
 
   final IconData icon;
   final Color color;
+  final Color background;
+  final VoidCallback onTap;
   final VoidCallback? onClose;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
-    final child = _buildIcon();
-    if (onClose == null) {
-      return child;
-    }
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onLongPress: onClose,
-      child: child,
+    return Column(
+      children: [
+        Material(
+          color: background,
+          shape: const StadiumBorder(),
+          child: InkWell(
+            customBorder: const StadiumBorder(),
+            onTap: onTap,
+            onLongPress: onClose,
+            child: SizedBox(
+              width: 58,
+              height: 32,
+              child: Center(
+                child: Icon(icon, color: color, size: 20),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+        ),
+      ],
     );
-  }
-
-  Widget _buildIcon() {
-    return Icon(icon, color: color);
   }
 }
 
@@ -2224,7 +2238,7 @@ class _CapsuleIconButton extends StatelessWidget {
           width: 58,
           height: 32,
           child: Center(
-            child: Icon(icon, color: foreground, size: 22),
+            child: Icon(icon, color: foreground, size: 20),
           ),
         ),
       ),

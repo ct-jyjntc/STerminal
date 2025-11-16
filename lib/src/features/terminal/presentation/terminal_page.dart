@@ -980,11 +980,19 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       padding: const EdgeInsets.symmetric(horizontal: 8),
       itemCount: flatNodes.length,
       itemBuilder: (context, index) {
+        final theme = Theme.of(context);
         final display = flatNodes[index];
         final node = display.node;
         final isDir = node.isDir;
         final depth = display.depth;
         final parentPath = _parentDirectory(node.path);
+        final isActiveDirectory =
+            isDir && session.currentDirectory == node.path;
+        final activeColor =
+            isActiveDirectory ? theme.colorScheme.primary : null;
+        final activeTileColor = isActiveDirectory
+            ? theme.colorScheme.primary.withOpacity(0.16)
+            : null;
         return _HoverableItem(
           onTap: () async {
             if (isDir) {
@@ -1011,40 +1019,58 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
               fullPath: node.path,
             ).whenComplete(() => session.entryContextMenuActive = false);
           },
-          child: Row(
-            children: [
-              SizedBox(width: depth * 12.0),
-              if (isDir)
-                Padding(
-                  padding: const EdgeInsets.only(right: 4),
-                  child: _buildExpandIcon(node),
-                )
-              else
-                const SizedBox(width: 28),
-              Expanded(
-                child: ListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  leading:
-                      Icon(isDir ? Icons.folder : Icons.insert_drive_file),
-                  title: Text(node.name),
-                  subtitle: !isDir && node.entry.attr.size != null
-                      ? Text(_formatFileSize(node.entry.attr.size!))
-                      : null,
-                  trailing: !isDir && node.isLoading
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : !isDir && node.error != null
-                          ? const Icon(Icons.error_outline,
-                              color: Colors.redAccent)
+          child: Container(
+            color: activeTileColor,
+            child: Row(
+              children: [
+                SizedBox(width: depth * 12.0),
+                if (isDir)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: IconTheme.merge(
+                      data: IconThemeData(color: activeColor),
+                      child: _buildExpandIcon(node),
+                    ),
+                  )
+                else
+                  const SizedBox(width: 28),
+                Expanded(
+                  child: ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(
+                      isDir ? Icons.folder : Icons.insert_drive_file,
+                      color: activeColor,
+                    ),
+                    title: Text(
+                      node.name,
+                      style: isActiveDirectory
+                          ? TextStyle(
+                              color: activeColor,
+                              fontWeight: FontWeight.w600,
+                            )
                           : null,
-                  onTap: null,
+                    ),
+                    subtitle: !isDir && node.entry.attr.size != null
+                        ? Text(_formatFileSize(node.entry.attr.size!))
+                        : null,
+                    trailing: !isDir && node.isLoading
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : !isDir && node.error != null
+                            ? const Icon(Icons.error_outline,
+                                color: Colors.redAccent)
+                            : null,
+                    selected: isActiveDirectory,
+                    selectedTileColor: Colors.transparent,
+                    onTap: null,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

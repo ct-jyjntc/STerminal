@@ -25,6 +25,51 @@ import '../../snippets/application/snippet_providers.dart';
 import '../../snippets/presentation/snippet_form_sheet.dart';
 import '../../vault/application/credential_providers.dart';
 
+class _TerminalSession {
+  _TerminalSession({
+    required this.id,
+    required this.displayName,
+    required this.terminal,
+    required this.controller,
+    required this.pathController,
+    required this.focusNode,
+  });
+
+  final String id;
+  final String displayName;
+  final Terminal terminal;
+  final TerminalController controller;
+  final TextEditingController pathController;
+  final FocusNode focusNode;
+  SSHClient? client;
+  SSHSession? session;
+  StreamSubscription<Uint8List>? stdoutSub;
+  StreamSubscription<Uint8List>? stderrSub;
+  SftpClient? sftp;
+  String rootDirectory = '';
+  String currentDirectory = '';
+  List<_FileNode> fileTree = const <_FileNode>[];
+  Set<String> loadingPaths = <String>{};
+  bool initialFileLoading = false;
+  String? fileError;
+  bool connecting = false;
+  String? error;
+  bool hasAttemptedConnection = false;
+  bool entryContextMenuActive = false;
+  final StringBuffer commandBuffer = StringBuffer();
+
+  void dispose() {
+    stdoutSub?.cancel();
+    stderrSub?.cancel();
+    session?.close();
+    client?.close();
+    sftp?.close();
+    pathController.dispose();
+    controller.dispose();
+    focusNode.dispose();
+  }
+}
+
 class TerminalPage extends ConsumerStatefulWidget {
   const TerminalPage({super.key, required this.hostId});
 
@@ -35,30 +80,12 @@ class TerminalPage extends ConsumerStatefulWidget {
 }
 
 class _TerminalPageState extends ConsumerState<TerminalPage> {
-  late final Terminal _terminal;
-  final TerminalController _terminalController = TerminalController();
-  SSHClient? _client;
-  SSHSession? _session;
-  StreamSubscription<Uint8List>? _stdoutSub;
-  StreamSubscription<Uint8List>? _stderrSub;
-  SftpClient? _sftp;
-  String _rootDirectory = '';
-  String _currentDirectory = '';
-  late final TextEditingController _pathController;
-  List<_FileNode> _fileTree = const <_FileNode>[];
+  final List<_TerminalSession> _sessions = [];
+  String? _activeSessionId;
+  int _sessionCounter = 1;
   List<Snippet> _snippetCache = const [];
-  Set<String> _loadingPaths = <String>{};
-  bool _initialFileLoading = false;
-  String? _fileError;
-  bool _entryContextMenuActive = false;
   List<String> _commandHistory = const [];
-  final StringBuffer _commandBuffer = StringBuffer();
   late final CommandHistoryService _historyService;
-  Host? _currentHost;
-  Credential? _currentCredential;
-  bool _connecting = false;
-  String? _error;
-  String? _autoConnectAttemptedHostId;
   TerminalSidebarTab _sidebarTab = TerminalSidebarTab.commands;
 
   @override
@@ -66,23 +93,88 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     super.initState();
     _historyService = ref.read(commandHistoryServiceProvider);
     _loadHistory();
-    _pathController = TextEditingController();
-    _terminal = Terminal(
-      maxLines: 10000,
-      platform: TerminalTargetPlatform.macos,
-    );
   }
 
   @override
   void dispose() {
-    _stdoutSub?.cancel();
-    _stderrSub?.cancel();
-    _session?.close();
-    _client?.close();
-    _sftp?.close();
-    _pathController.dispose();
-    _terminalController.dispose();
+    for (final session in _sessions) {
+      session.dispose();
+    }
     super.dispose();
+  }
+
+  _TerminalSession? get _activeSession {
+    if (_sessions.isEmpty) return null;
+    final targetId = _activeSessionId;
+    if (targetId == null) return _sessions.first;
+    return _sessions.firstWhere(
+      (session) => session.id == targetId,
+      orElse: () => _sessions.first,
+    );
+  }
+
+  void _focusSession(_TerminalSession session) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      FocusScope.of(context).requestFocus(session.focusNode);
+    });
+  }
+
+  void _ensureSessionsInitialized(Host host, Credential credential) {
+    if (_sessions.isEmpty) {
+      final session = _createSession();
+      setState(() {
+        _sessions.add(session);
+        _activeSessionId = session.id;
+      });
+      _focusSession(session);
+    }
+    for (final session in _sessions) {
+      _maybeConnect(session, host, credential);
+    }
+  }
+
+  _TerminalSession _createSession() {
+    final sessionNumber = _sessionCounter++;
+    final sessionId = 'session_$sessionNumber';
+    return _TerminalSession(
+      id: sessionId,
+      displayName: 'T$sessionNumber',
+      terminal: Terminal(
+        maxLines: 10000,
+        platform: TerminalTargetPlatform.macos,
+      ),
+      controller: TerminalController(),
+      pathController: TextEditingController(),
+      focusNode: FocusNode(),
+    );
+  }
+
+  void _addSession(Host host, Credential credential) {
+    final session = _createSession();
+    setState(() {
+      _sessions.add(session);
+      _activeSessionId = session.id;
+    });
+    _focusSession(session);
+    _maybeConnect(session, host, credential);
+  }
+
+  void _closeSession(String sessionId) {
+    if (_sessions.length <= 1) return;
+    _TerminalSession? removed;
+    setState(() {
+      removed = _sessions.firstWhere((session) => session.id == sessionId);
+      _sessions.remove(removed);
+      if (_activeSessionId == sessionId) {
+        _activeSessionId = _sessions.isNotEmpty ? _sessions.last.id : null;
+      }
+    });
+    removed?.dispose();
+    final active = _activeSession;
+    if (active != null) {
+      _focusSession(active);
+    }
   }
 
   @override
@@ -124,7 +216,13 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                 body: Center(child: Text(l10n.terminalCredentialDeleted)),
               );
             }
-            _maybeConnect(host, credential);
+            _ensureSessionsInitialized(host, credential);
+            final session = _activeSession;
+            if (session == null) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
             final snippets = ref.watch(snippetsStreamProvider);
             final brightness = Theme.of(context).brightness;
             final isDark = brightness == Brightness.dark;
@@ -139,19 +237,24 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    _buildSessionRail(
+                      context: context,
+                      host: host,
+                      credential: credential,
+                      activeSession: session,
+                      isStandaloneWindow: isStandaloneWindow,
+                    ),
                     Expanded(
                       child: Column(
                         children: [
                           Padding(
-                            padding: isStandaloneWindow
-                                ? const EdgeInsets.fromLTRB(66, 16, 24, 4)
-                                : const EdgeInsets.fromLTRB(24, 8, 24, 4),
+                            padding: const EdgeInsets.fromLTRB(8, 24, 24, 4),
                             child: Row(
                               children: [
                                 if (!isStandaloneWindow)
                                   ...[
                                     Padding(
-                                      padding: const EdgeInsets.only(left: 48),
+                                      padding: const EdgeInsets.only(left: 8),
                                       child: IconButton(
                                         icon: const Icon(Icons.arrow_back),
                                         tooltip:
@@ -184,17 +287,19 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                               child: DecoratedBox(
                                 decoration:
                                     BoxDecoration(color: terminalTheme.background),
-                      child: TerminalView(
-                        _terminal,
-                        controller: _terminalController,
-                        autofocus: true,
-                        padding: const EdgeInsets.all(16),
-                        theme: terminalTheme,
-                        keyboardAppearance:
-                            isDark ? Brightness.dark : Brightness.light,
-                        keyboardType: TextInputType.multiline,
-                        backgroundOpacity: 1.0,
-                      ),
+                                child: TerminalView(
+                                  key: ValueKey(session.id),
+                                  session.terminal,
+                                  controller: session.controller,
+                                  autofocus: true,
+                                  focusNode: session.focusNode,
+                                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                                  theme: terminalTheme,
+                                  keyboardAppearance:
+                                      isDark ? Brightness.dark : Brightness.light,
+                                  keyboardType: TextInputType.multiline,
+                                  backgroundOpacity: 1.0,
+                                ),
                               ),
                             ),
                           ),
@@ -235,16 +340,26 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                               },
                             ),
                           ),
-        Expanded(
-          child: _sidebarTab == TerminalSidebarTab.files
-              ? _buildSidebarContentWithContextMenu(context, l10n, snippets)
-              : _buildSidebarContent(context, l10n, snippets),
-        ),
-                          if (_error != null)
+                          Expanded(
+                            child: _sidebarTab == TerminalSidebarTab.files
+                                ? _buildSidebarContentWithContextMenu(
+                                    context,
+                                    l10n,
+                                    snippets,
+                                    session,
+                                  )
+                                : _buildSidebarContent(
+                                    context,
+                                    l10n,
+                                    snippets,
+                                    session,
+                                  ),
+                          ),
+                          if (session.error != null)
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Text(
-                                _error!,
+                                session.error!,
                                 style: TextStyle(
                                   color: Theme.of(context).colorScheme.error,
                                 ),
@@ -263,39 +378,113 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     );
   }
 
-  void _maybeConnect(Host host, Credential credential) {
-    if (_autoConnectAttemptedHostId == host.id || _connecting) {
-      return;
-    }
-    _autoConnectAttemptedHostId = host.id;
-    if (_currentHost?.id == host.id &&
-        _currentCredential?.id == credential.id &&
-        _client != null) {
-      return;
-    }
-    _reconnect(host, credential);
+  Widget _buildSessionRail({
+    required BuildContext context,
+    required Host host,
+    required Credential credential,
+    required _TerminalSession activeSession,
+    required bool isStandaloneWindow,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final selectedIndex = _sessions.indexWhere((s) => s.id == activeSession.id);
+    return Container(
+      width: 88,
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        border: const Border(
+          right: BorderSide(color: Colors.white10, width: 1),
+        ),
+      ),
+      child: Column(
+        children: [
+          SizedBox(height: isStandaloneWindow ? 48 : 48),
+          Expanded(
+            child: NavigationRail(
+              selectedIndex: selectedIndex >= 0 ? selectedIndex : 0,
+              backgroundColor: Colors.transparent,
+              groupAlignment: -1,
+              labelType: NavigationRailLabelType.all,
+              onDestinationSelected: (index) {
+                final session = _sessions[index];
+                setState(() {
+                  _activeSessionId = session.id;
+                });
+                _focusSession(session);
+              },
+              destinations: [
+                for (final session in _sessions)
+                  NavigationRailDestination(
+                    icon: _SessionRailIcon(
+                      icon: Icons.terminal,
+                      color: colorScheme.onSurfaceVariant,
+                      onClose: _sessions.length > 1
+                          ? () => _closeSession(session.id)
+                          : null,
+                    ),
+                    selectedIcon: _SessionRailIcon(
+                      icon: Icons.terminal,
+                      color: colorScheme.onPrimaryContainer,
+                      onClose: _sessions.length > 1
+                          ? () => _closeSession(session.id)
+                          : null,
+                    ),
+                    label: Text(session.displayName),
+                  ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+            child: SizedBox(
+              width: double.infinity,
+              child: IconButton.filledTonal(
+                onPressed: () => _addSession(host, credential),
+                icon: const Icon(Icons.add),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  Future<void> _reconnect(Host host, Credential credential) async {
+  void _maybeConnect(
+    _TerminalSession session,
+    Host host,
+    Credential credential,
+  ) {
+    if (session.hasAttemptedConnection || session.connecting) {
+      return;
+    }
+    session.hasAttemptedConnection = true;
+    _reconnect(session, host, credential);
+  }
+
+  Future<void> _reconnect(
+    _TerminalSession session,
+    Host host,
+    Credential credential,
+  ) async {
     final l10n = context.l10n;
-    await _stdoutSub?.cancel();
-    await _stderrSub?.cancel();
-    _session?.close();
-    _client?.close();
-    _sftp?.close();
+    await session.stdoutSub?.cancel();
+    await session.stderrSub?.cancel();
+    session.session?.close();
+    session.client?.close();
+    session.sftp?.close();
     setState(() {
-      _connecting = true;
-      _error = null;
-      _sftp = null;
-      _rootDirectory = '';
-      _updateCurrentDirectory('');
-      _fileTree = const <_FileNode>[];
-      _fileError = null;
-      _loadingPaths = <String>{};
-      _initialFileLoading = false;
+      session.connecting = true;
+      session.error = null;
+      session.sftp = null;
+      session.rootDirectory = '';
+      _updateCurrentDirectory(session, '');
+      session.fileTree = const <_FileNode>[];
+      session.fileError = null;
+      session.loadingPaths = <String>{};
+      session.initialFileLoading = false;
     });
-    _terminal.buffer.clear();
-    _terminal.write('${l10n.terminalConnectingMessage(host.address)}\r\n');
+    session.terminal.buffer.clear();
+    session.terminal
+        .write('${l10n.terminalConnectingMessage(host.address)}\r\n');
     try {
       final socket = await _createSocket(host, l10n);
       final identities = <SSHKeyPair>[];
@@ -318,34 +507,34 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
             ? () => credential.password ?? ''
             : null,
       );
-      final session = await client.shell(
+      final shellSession = await client.shell(
         pty: SSHPtyConfig(
           type: 'xterm-256color',
-          width: _terminal.viewWidth,
-          height: _terminal.viewHeight,
+          width: session.terminal.viewWidth,
+          height: session.terminal.viewHeight,
         ),
       );
-      _stdoutSub = session.stdout.listen(_onData);
-      _stderrSub = session.stderr.listen(_onData);
-      _terminal.onOutput = (data) {
-        final shouldSend = _handleTerminalInput(data);
+      session.stdoutSub =
+          shellSession.stdout.listen((data) => _onData(session, data));
+      session.stderrSub =
+          shellSession.stderr.listen((data) => _onData(session, data));
+      session.terminal.onOutput = (data) {
+        final shouldSend = _handleTerminalInput(session, data);
         if (shouldSend) {
-          session.write(Uint8List.fromList(utf8.encode(data)));
+          shellSession.write(Uint8List.fromList(utf8.encode(data)));
         }
       };
-      _terminal.onResize = (width, height, pixelWidth, pixelHeight) {
-        session.resizeTerminal(width, height, pixelWidth, pixelHeight);
+      session.terminal.onResize = (width, height, pixelWidth, pixelHeight) {
+        shellSession.resizeTerminal(width, height, pixelWidth, pixelHeight);
       };
       if (!mounted) return;
       setState(() {
-        _client = client;
-        _session = session;
-        _connecting = false;
-        _currentHost = host;
-        _currentCredential = credential;
-        _error = null;
+        session.client = client;
+        session.session = shellSession;
+        session.connecting = false;
+        session.error = null;
       });
-      unawaited(_initSftp());
+      unawaited(_initSftp(session));
       await ref.read(hostsRepositoryProvider).upsert(
             host.copyWith(
               lastConnectedAt: DateTime.now(),
@@ -356,11 +545,11 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       final message = l10n.terminalConnectionFailed('$error');
       if (mounted) {
         setState(() {
-          _error = message;
-          _connecting = false;
+          session.error = message;
+          session.connecting = false;
         });
       }
-      _terminal.write('\r\n$message\r\n');
+      session.terminal.write('\r\n$message\r\n');
     }
   }
 
@@ -416,22 +605,22 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     return InternetAddress(host, type: InternetAddressType.unix);
   }
 
-  void _onData(Uint8List data) {
+  void _onData(_TerminalSession session, Uint8List data) {
     final text = utf8.decode(data);
-    _terminal.write(text);
+    session.terminal.write(text);
   }
 
-  bool _handleTerminalInput(String data) {
+  bool _handleTerminalInput(_TerminalSession session, String data) {
     for (final codePoint in data.runes) {
       if (codePoint == 9) {
         // Tab pressed: show local completion suggestions instead of sending to host.
-        final current = _commandBuffer.toString();
-        unawaited(_showCompletionSuggestions(prefix: current));
+        final current = session.commandBuffer.toString();
+        unawaited(_showCompletionSuggestions(session, prefix: current));
         return false;
       }
       if (codePoint == 13 || codePoint == 10) {
-        final command = _commandBuffer.toString().trim();
-        _commandBuffer.clear();
+        final command = session.commandBuffer.toString().trim();
+        session.commandBuffer.clear();
         if (command.isNotEmpty) {
           final limit =
               ref.read(settingsControllerProvider).historyLimit.clamp(10, 200);
@@ -450,14 +639,14 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
           _historyService.save(history);
         }
       } else if (codePoint == 127 || codePoint == 8) {
-        if (_commandBuffer.isNotEmpty) {
-          final text = _commandBuffer.toString();
-          _commandBuffer
+        if (session.commandBuffer.isNotEmpty) {
+          final text = session.commandBuffer.toString();
+          session.commandBuffer
             ..clear()
             ..write(text.substring(0, text.length - 1));
         }
       } else if (codePoint >= 32) {
-        _commandBuffer.write(String.fromCharCode(codePoint));
+        session.commandBuffer.write(String.fromCharCode(codePoint));
       }
     }
     return true;
@@ -471,7 +660,10 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     });
   }
 
-  Future<void> _showCompletionSuggestions({required String prefix}) async {
+  Future<void> _showCompletionSuggestions(
+    _TerminalSession session, {
+    required String prefix,
+  }) async {
     if (!mounted) return;
     final lowerPrefix = prefix.toLowerCase();
     final historyMatches = _commandHistory.where((cmd) {
@@ -518,17 +710,17 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       },
     );
     if (selected != null && selected.isNotEmpty) {
-      final current = _commandBuffer.toString();
+      final current = session.commandBuffer.toString();
       if (selected.startsWith(current)) {
         final remaining = selected.substring(current.length);
-        _terminal.paste('$remaining ');
-        _commandBuffer
+        session.terminal.paste('$remaining ');
+        session.commandBuffer
           ..clear()
           ..write('$selected ');
       } else {
         // Fall back to sending full suggestion.
-        _terminal.paste('$selected ');
-        _commandBuffer
+        session.terminal.paste('$selected ');
+        session.commandBuffer
           ..clear()
           ..write('$selected ');
       }
@@ -539,13 +731,19 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     BuildContext context,
     AppLocalizations l10n,
     AsyncValue<List<Snippet>> snippets,
+    _TerminalSession session,
   ) {
     return _ContextMenuRegion(
       onShowMenu: (position) {
-        if (_entryContextMenuActive) return;
-        _showFileContextMenu(context, position, parentPath: _currentDirectory);
+        if (session.entryContextMenuActive) return;
+        _showFileContextMenu(
+          context,
+          position,
+          session: session,
+          parentPath: session.currentDirectory,
+        );
       },
-      child: _buildSidebarContent(context, l10n, snippets),
+      child: _buildSidebarContent(context, l10n, snippets, session),
     );
   }
 
@@ -553,10 +751,11 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     BuildContext context,
     AppLocalizations l10n,
     AsyncValue<List<Snippet>> snippets,
+    _TerminalSession session,
   ) {
     switch (_sidebarTab) {
       case TerminalSidebarTab.files:
-        return _buildFilesSidebar(context, l10n);
+        return _buildFilesSidebar(context, l10n, session);
       case TerminalSidebarTab.commands:
         return Column(
           children: [
@@ -584,46 +783,51 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                   return ListView.separated(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemBuilder: (context, index) {
-                      final snippet = items[index];
-                      return ListTile(
-                        dense: true,
-                        title: Text(snippet.title),
-                        subtitle: Text(
+                    final snippet = items[index];
+                    return ListTile(
+                      dense: true,
+                      title: Text(snippet.title),
+                      subtitle: Text(
                           snippet.command,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                        ),
-                        onTap: () {
-                          _terminal.paste('${snippet.command}\r');
-                        },
-                      );
-                    },
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemCount: items.length,
+                      ),
+                      onTap: () {
+                          session.terminal.paste('${snippet.command}\r');
+                      },
+                    );
+                  },
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemCount: items.length,
                   );
                 },
               ),
             ),
-          ],
-        );
+        ],
+      );
       case TerminalSidebarTab.history:
-        return _buildHistorySidebar(context, l10n);
+        return _buildHistorySidebar(context, l10n, session);
     }
   }
 
-  Widget _buildFilesSidebar(BuildContext context, AppLocalizations l10n) {
-    if (_sftp == null) {
+  Widget _buildFilesSidebar(
+    BuildContext context,
+    AppLocalizations l10n,
+    _TerminalSession session,
+  ) {
+    if (session.sftp == null) {
       return Center(
         child: Text(
-          _connecting
+          session.connecting
               ? l10n.terminalSidebarFilesLoading
               : l10n.terminalSidebarFilesConnect,
         ),
       );
     }
-    final hasPath = _currentDirectory.isNotEmpty;
+    final hasPath = session.currentDirectory.isNotEmpty;
     final isRefreshing =
-        _initialFileLoading || _loadingPaths.contains(_currentDirectory);
+        session.initialFileLoading ||
+            session.loadingPaths.contains(session.currentDirectory);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -633,7 +837,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
             children: [
               Expanded(
                 child: TextField(
-                  controller: _pathController,
+                  controller: session.pathController,
                   enabled: !isRefreshing,
                   decoration: InputDecoration(
                     isDense: true,
@@ -649,7 +853,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                   onSubmitted: (value) {
                     final trimmed = value.trim();
                     if (trimmed.isEmpty || isRefreshing) return;
-                    _loadDirectory(trimmed);
+                    _loadDirectory(session, trimmed);
                   },
                 ),
               ),
@@ -658,21 +862,24 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                 icon: const Icon(Icons.refresh),
                 tooltip: l10n.terminalSidebarFilesRefresh,
                 onPressed: !isRefreshing && hasPath
-                    ? () => _loadDirectory(_currentDirectory)
+                    ? () => _loadDirectory(session, session.currentDirectory)
                     : null,
               ),
             ],
           ),
         ),
         Expanded(
-          child: _buildFileList(context, l10n),
+          child: _buildFileList(context, l10n, session),
         ),
       ],
     );
   }
 
   Widget _buildHistorySidebar(
-      BuildContext context, AppLocalizations l10n) {
+    BuildContext context,
+    AppLocalizations l10n,
+    _TerminalSession session,
+  ) {
     if (_commandHistory.isEmpty) {
       return Center(
         child: Text(
@@ -708,7 +915,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                 dense: true,
                 title: Text(command),
                 onTap: () {
-                  _terminal.textInput('$command ');
+                  session.terminal.textInput('$command ');
                 },
               );
             },
@@ -720,34 +927,38 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     );
   }
 
-  Widget _buildFileList(BuildContext context, AppLocalizations l10n) {
-    if (_initialFileLoading && _fileTree.isEmpty) {
+  Widget _buildFileList(
+    BuildContext context,
+    AppLocalizations l10n,
+    _TerminalSession session,
+  ) {
+    if (session.initialFileLoading && session.fileTree.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_fileError != null && _fileTree.isEmpty) {
+    if (session.fileError != null && session.fileTree.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              _fileError!,
+              session.fileError!,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             FilledButton(
-              onPressed: _currentDirectory.isEmpty
+              onPressed: session.currentDirectory.isEmpty
                   ? null
-                  : () => _loadDirectory(_currentDirectory),
+                  : () => _loadDirectory(session, session.currentDirectory),
               child: Text(l10n.terminalSidebarFilesRefresh),
             ),
           ],
         ),
       );
     }
-    if (_fileTree.isEmpty) {
+    if (session.fileTree.isEmpty) {
       return Center(child: Text(l10n.terminalSidebarFilesEmpty));
     }
-    final flatNodes = _flattenTree(_fileTree);
+    final flatNodes = _flattenTree(session.fileTree);
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       itemCount: flatNodes.length,
@@ -760,24 +971,28 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
         return _HoverableItem(
           onTap: () async {
             if (isDir) {
-              await _toggleDirectory(node);
+              await _toggleDirectory(session, node);
             } else {
               setState(() {
-                _currentDirectory = parentPath;
+                session.currentDirectory = parentPath;
               });
-              await _openFilePreview(node.entry, parentPath);
+              await _openFilePreview(session, node.entry, parentPath);
             }
           },
           onContextMenu: (position) {
-            _entryContextMenuActive = true;
-            _updateCurrentDirectory(node.isDir ? node.path : parentPath);
+            session.entryContextMenuActive = true;
+            _updateCurrentDirectory(
+              session,
+              node.isDir ? node.path : parentPath,
+            );
             _showFileContextMenu(
               context,
               position,
+              session: session,
               entry: node.entry,
               parentPath: node.isDir ? node.path : parentPath,
               fullPath: node.path,
-            ).whenComplete(() => _entryContextMenuActive = false);
+            ).whenComplete(() => session.entryContextMenuActive = false);
           },
           child: Row(
             children: [
@@ -819,8 +1034,8 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     );
   }
 
-  Future<void> _initSftp() async {
-    final client = _client;
+  Future<void> _initSftp(_TerminalSession session) async {
+    final client = session.client;
     if (client == null) return;
     final l10n = context.l10n;
     try {
@@ -831,48 +1046,52 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
         sftp.close();
         return;
       }
-      _sftp?.close();
+      session.sftp?.close();
       setState(() {
-        _sftp = sftp;
-        _rootDirectory = rootPath;
-        _updateCurrentDirectory(rootPath);
-        _fileTree = const <_FileNode>[];
-        _fileError = null;
-        _loadingPaths = {rootPath};
-        _initialFileLoading = true;
+        session.sftp = sftp;
+        session.rootDirectory = rootPath;
+        _updateCurrentDirectory(session, rootPath);
+        session.fileTree = const <_FileNode>[];
+        session.fileError = null;
+        session.loadingPaths = {rootPath};
+        session.initialFileLoading = true;
       });
-      final loadedRoot = await _loadDirectory(rootPath);
+      final loadedRoot = await _loadDirectory(session, rootPath);
       if (!loadedRoot && homePath != rootPath) {
         // Fallback to the user's home directory if root is not accessible.
         setState(() {
-          _rootDirectory = homePath;
-          _updateCurrentDirectory(homePath);
-          _fileTree = const <_FileNode>[];
-          _fileError = null;
-          _loadingPaths = {homePath};
-          _initialFileLoading = true;
+          session.rootDirectory = homePath;
+          _updateCurrentDirectory(session, homePath);
+          session.fileTree = const <_FileNode>[];
+          session.fileError = null;
+          session.loadingPaths = {homePath};
+          session.initialFileLoading = true;
         });
-        await _loadDirectory(homePath);
+        await _loadDirectory(session, homePath);
       }
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _fileError = l10n.terminalSidebarFilesError('$error');
-        _initialFileLoading = false;
+        session.fileError = l10n.terminalSidebarFilesError('$error');
+        session.initialFileLoading = false;
       });
     }
   }
 
-  Future<bool> _loadDirectory(String path, {bool setCurrent = true}) async {
-    final sftp = _sftp;
+  Future<bool> _loadDirectory(
+    _TerminalSession session,
+    String path, {
+    bool setCurrent = true,
+  }) async {
+    final sftp = session.sftp;
     if (sftp == null) return false;
     final l10n = context.l10n;
     setState(() {
-      if (setCurrent) _updateCurrentDirectory(path);
-      _fileError = null;
-      _loadingPaths = {..._loadingPaths, path};
-      _fileTree = _updateNode(
-        _fileTree,
+      if (setCurrent) _updateCurrentDirectory(session, path);
+      session.fileError = null;
+      session.loadingPaths = {...session.loadingPaths, path};
+      session.fileTree = _updateNode(
+        session.fileTree,
         path,
         (node) => node.copyWith(
           isLoading: true,
@@ -904,32 +1123,34 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
           )
           .toList();
       setState(() {
-        final isRootPath = path == _rootDirectory || _fileTree.isEmpty;
-        _fileTree = _setChildrenForPath(
-          _fileTree,
+        final isRootPath =
+            path == session.rootDirectory || session.fileTree.isEmpty;
+        session.fileTree = _setChildrenForPath(
+          session.fileTree,
           path,
           nodes,
+          rootDirectory: session.rootDirectory,
           isRootPath: isRootPath,
         );
-        _loadingPaths = {..._loadingPaths}..remove(path);
-        _initialFileLoading = false;
+        session.loadingPaths = {...session.loadingPaths}..remove(path);
+        session.initialFileLoading = false;
       });
       return true;
     } catch (error) {
       if (!mounted) return false;
       final message = l10n.terminalSidebarFilesError('$error');
       setState(() {
-        _fileError = message;
-        _loadingPaths = {..._loadingPaths}..remove(path);
-        _fileTree = _updateNode(
-          _fileTree,
+        session.fileError = message;
+        session.loadingPaths = {...session.loadingPaths}..remove(path);
+        session.fileTree = _updateNode(
+          session.fileTree,
           path,
           (node) => node.copyWith(
             isLoading: false,
             error: message,
           ),
         );
-        _initialFileLoading = false;
+        session.initialFileLoading = false;
       });
       return false;
     }
@@ -973,9 +1194,10 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     List<_FileNode> nodes,
     String path,
     List<_FileNode> children, {
+    required String rootDirectory,
     bool isRootPath = false,
   }) {
-    if (isRootPath && (nodes.isEmpty || path == _rootDirectory)) {
+    if (isRootPath && (nodes.isEmpty || path == rootDirectory)) {
       return children;
     }
     return _updateNode(
@@ -1137,19 +1359,19 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     return '${size.toStringAsFixed(unitIndex == 0 ? 0 : 1)} ${units[unitIndex]}';
   }
 
-  void _updateCurrentDirectory(String path) {
-    _currentDirectory = path;
-    _pathController.text = path;
+  void _updateCurrentDirectory(_TerminalSession session, String path) {
+    session.currentDirectory = path;
+    session.pathController.text = path;
   }
 
-  Future<void> _toggleDirectory(_FileNode node) async {
-    if (!_ensureSftpReady()) return;
+  Future<void> _toggleDirectory(_TerminalSession session, _FileNode node) async {
+    if (!_ensureSftpReady(session)) return;
     final shouldExpand = !node.isExpanded;
     if (shouldExpand) {
       setState(() {
-        _updateCurrentDirectory(node.path);
-        _fileTree = _updateNode(
-          _fileTree,
+        _updateCurrentDirectory(session, node.path);
+        session.fileTree = _updateNode(
+          session.fileTree,
           node.path,
           (current) => current.copyWith(
             isExpanded: true,
@@ -1157,14 +1379,14 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
             error: null,
           ),
         );
-        _loadingPaths = {..._loadingPaths, node.path};
+        session.loadingPaths = {...session.loadingPaths, node.path};
       });
-      await _loadDirectory(node.path, setCurrent: false);
+      await _loadDirectory(session, node.path, setCurrent: false);
     } else {
       setState(() {
-        _updateCurrentDirectory(node.path);
-        _fileTree = _updateNode(
-          _fileTree,
+        _updateCurrentDirectory(session, node.path);
+        session.fileTree = _updateNode(
+          session.fileTree,
           node.path,
           (current) => current.copyWith(isExpanded: false),
         );
@@ -1206,6 +1428,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   Future<void> _showFileContextMenu(
     BuildContext context,
     Offset position, {
+    required _TerminalSession session,
     SftpName? entry,
     String? parentPath,
     String? fullPath,
@@ -1266,22 +1489,22 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     );
     if (result == null) return;
     if (!mounted) return;
-    final targetParent = parentPath ?? _currentDirectory;
+    final targetParent = parentPath ?? session.currentDirectory;
     switch (result) {
       case _FileContextAction.newFile:
-        await _handleCreateEntry(isDirectory: false);
+        await _handleCreateEntry(session, isDirectory: false);
         break;
       case _FileContextAction.newFolder:
-        await _handleCreateEntry(isDirectory: true);
+        await _handleCreateEntry(session, isDirectory: true);
         break;
       case _FileContextAction.rename:
         if (entry != null) {
-          await _handleRenameEntry(entry, parentPath: targetParent);
+          await _handleRenameEntry(session, entry, parentPath: targetParent);
         }
         break;
       case _FileContextAction.download:
         if (entry != null && !isDir) {
-          await _handleDownloadEntry(entry, parentPath: targetParent);
+          await _handleDownloadEntry(session, entry, parentPath: targetParent);
         }
         break;
       case _FileContextAction.copyPath:
@@ -1295,20 +1518,21 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
         }
         break;
       case _FileContextAction.upload:
-        await _handleUploadFile();
+        await _handleUploadFile(session);
         break;
       case _FileContextAction.delete:
         if (entry != null) {
-          await _handleDeleteEntry(entry, parentPath: targetParent);
+          await _handleDeleteEntry(session, entry, parentPath: targetParent);
         }
         break;
     }
   }
 
-  Future<void> _handleCreateEntry({
+  Future<void> _handleCreateEntry(
+    _TerminalSession session, {
     required bool isDirectory,
   }) async {
-    if (!_ensureSftpReady()) return;
+    if (!_ensureSftpReady(session)) return;
     final l10n = context.l10n;
     final name = await _promptForInput(
       title: isDirectory
@@ -1316,9 +1540,9 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
           : l10n.terminalSidebarFilesNewFilePrompt,
     );
     if (name == null || name.trim().isEmpty) return;
-    final path = _joinPath(_currentDirectory, name.trim());
+    final path = _joinPath(session.currentDirectory, name.trim());
     try {
-      final sftp = _sftp!;
+      final sftp = session.sftp!;
       if (isDirectory) {
         await sftp.mkdir(path);
       } else {
@@ -1330,7 +1554,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
         );
         await file.close();
       }
-      await _loadDirectory(_currentDirectory);
+      await _loadDirectory(session, session.currentDirectory);
       if (!mounted) return;
       _showSnackBarMessage(l10n.terminalSidebarFilesRefreshSuccess);
     } catch (error) {
@@ -1340,10 +1564,11 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   }
 
   Future<void> _handleRenameEntry(
+    _TerminalSession session,
     SftpName entry, {
     required String parentPath,
   }) async {
-    if (!_ensureSftpReady()) return;
+    if (!_ensureSftpReady(session)) return;
     final l10n = context.l10n;
     final name = await _promptForInput(
       title: l10n.terminalSidebarFilesRenamePrompt(entry.filename),
@@ -1353,8 +1578,8 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     final newPath = _joinPath(parentPath, name.trim());
     final oldPath = _joinPath(parentPath, entry.filename);
     try {
-      await _sftp!.rename(oldPath, newPath);
-      await _loadDirectory(parentPath, setCurrent: false);
+      await session.sftp!.rename(oldPath, newPath);
+      await _loadDirectory(session, parentPath, setCurrent: false);
       if (!mounted) return;
       _showSnackBarMessage(l10n.terminalSidebarFilesRefreshSuccess);
     } catch (error) {
@@ -1364,10 +1589,11 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   }
 
   Future<void> _handleDeleteEntry(
+    _TerminalSession session,
     SftpName entry, {
     required String parentPath,
   }) async {
-    if (!_ensureSftpReady()) return;
+    if (!_ensureSftpReady(session)) return;
     final l10n = context.l10n;
     final confirm = await showDialog<bool>(
       context: context,
@@ -1390,15 +1616,14 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     );
     if (confirm != true) return;
     if (!mounted) return;
-    if (!mounted) return;
     final path = _joinPath(parentPath, entry.filename);
     try {
       if (_isDirectory(entry)) {
-        await _sftp!.rmdir(path);
+        await session.sftp!.rmdir(path);
       } else {
-        await _sftp!.remove(path);
+        await session.sftp!.remove(path);
       }
-      await _loadDirectory(parentPath, setCurrent: false);
+      await _loadDirectory(session, parentPath, setCurrent: false);
       if (!mounted) return;
       _showSnackBarMessage(l10n.terminalSidebarFilesRefreshSuccess);
     } catch (error) {
@@ -1408,10 +1633,11 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   }
 
   Future<void> _handleDownloadEntry(
+    _TerminalSession session,
     SftpName entry, {
     required String parentPath,
   }) async {
-    final sftp = _sftp;
+    final sftp = session.sftp;
     if (sftp == null) return;
     final l10n = context.l10n;
     final settings = ref.read(settingsControllerProvider);
@@ -1446,15 +1672,15 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     }
   }
 
-  Future<void> _handleUploadFile() async {
-    if (!_ensureSftpReady()) return;
+  Future<void> _handleUploadFile(_TerminalSession session) async {
+    if (!_ensureSftpReady(session)) return;
     final l10n = context.l10n;
     final selected = await file_selector.openFile();
     if (selected == null) return;
     final data = await selected.readAsBytes();
-    final remotePath = _joinPath(_currentDirectory, selected.name);
+    final remotePath = _joinPath(session.currentDirectory, selected.name);
     try {
-      final file = await _sftp!.open(
+      final file = await session.sftp!.open(
         remotePath,
         mode: SftpFileOpenMode.create |
             SftpFileOpenMode.write |
@@ -1462,7 +1688,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       );
       await file.writeBytes(Uint8List.fromList(data));
       await file.close();
-      await _loadDirectory(_currentDirectory);
+      await _loadDirectory(session, session.currentDirectory);
       if (!mounted) return;
       _showSnackBarMessage(
         l10n.terminalSidebarFilesUploadSuccess(selected.name),
@@ -1476,6 +1702,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
   }
 
   Future<void> _openFilePreview(
+    _TerminalSession session,
     SftpName entry,
     String parentPath,
   ) async {
@@ -1485,7 +1712,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       _showSnackBarMessage(l10n.terminalSidebarFilesPreviewUnsupported);
       return;
     }
-    final sftp = _sftp;
+    final sftp = session.sftp;
     if (sftp == null) return;
     final remotePath = _joinPath(parentPath, entry.filename);
     try {
@@ -1554,8 +1781,8 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
     return result?.trim();
   }
 
-  bool _ensureSftpReady() {
-    if (_sftp == null || _currentDirectory.isEmpty) {
+  bool _ensureSftpReady(_TerminalSession session) {
+    if (session.sftp == null || session.currentDirectory.isEmpty) {
       _showSnackBarMessage(context.l10n.terminalSidebarFilesConnect);
       return false;
     }
@@ -1933,11 +2160,40 @@ class _ContextMenuRegionState extends State<_ContextMenuRegion> {
         color: _pressed
             ? Theme.of(context)
                 .colorScheme
-                .surfaceContainerHighest
-                .withValues(alpha: 0.4)
+                .surfaceVariant
+                .withOpacity(0.4)
             : null,
         child: widget.child,
       ),
     );
+  }
+}
+
+class _SessionRailIcon extends StatelessWidget {
+  const _SessionRailIcon({
+    required this.icon,
+    required this.color,
+    this.onClose,
+  });
+
+  final IconData icon;
+  final Color color;
+  final VoidCallback? onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final child = _buildIcon();
+    if (onClose == null) {
+      return child;
+    }
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onLongPress: onClose,
+      child: child,
+    );
+  }
+
+  Widget _buildIcon() {
+    return Icon(icon, color: color);
   }
 }

@@ -7,6 +7,9 @@
 
 namespace {
 
+constexpr Win32Window::Size kDefaultMinSize(900, 600);
+constexpr Win32Window::Size kDefaultMaxSize(2600, 1800);
+
 /// Window attribute that enables dark mode window decorations.
 ///
 /// Redefined in case the developer's machine has a Windows SDK older than
@@ -35,6 +38,12 @@ using EnableNonClientDpiScaling = BOOL __stdcall(HWND hwnd);
 // scale factor
 int Scale(int source, double scale_factor) {
   return static_cast<int>(source * scale_factor);
+}
+
+double GetScaleFactorForWindow(HWND hwnd) {
+  HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+  UINT dpi = FlutterDesktopGetDpiForMonitor(monitor);
+  return dpi / 96.0;
 }
 
 // Dynamically loads the |EnableNonClientDpiScaling| from the User32 module.
@@ -111,7 +120,8 @@ void WindowClassRegistrar::UnregisterWindowClass() {
   class_registered_ = false;
 }
 
-Win32Window::Win32Window() {
+Win32Window::Win32Window()
+    : min_size_(kDefaultMinSize), max_size_(kDefaultMaxSize) {
   ++g_active_window_count;
 }
 
@@ -207,6 +217,24 @@ Win32Window::MessageHandler(HWND hwnd,
       return 0;
     }
 
+    case WM_GETMINMAXINFO: {
+      auto info = reinterpret_cast<MINMAXINFO*>(lparam);
+      const double scale_factor = GetScaleFactorForWindow(hwnd);
+      if (min_size_) {
+        info->ptMinTrackSize.x = Scale(min_size_->width, scale_factor);
+        info->ptMinTrackSize.y = Scale(min_size_->height, scale_factor);
+      }
+      if (max_size_) {
+        const int scaled_width = Scale(max_size_->width, scale_factor);
+        const int scaled_height = Scale(max_size_->height, scale_factor);
+        info->ptMaxTrackSize.x = scaled_width;
+        info->ptMaxTrackSize.y = scaled_height;
+        info->ptMaxSize.x = scaled_width;
+        info->ptMaxSize.y = scaled_height;
+      }
+      return 0;
+    }
+
     case WM_ACTIVATE:
       if (child_content_ != nullptr) {
         SetFocus(child_content_);
@@ -261,6 +289,14 @@ HWND Win32Window::GetHandle() {
 
 void Win32Window::SetQuitOnClose(bool quit_on_close) {
   quit_on_close_ = quit_on_close;
+}
+
+void Win32Window::SetMinimumSize(Size size) {
+  min_size_ = size;
+}
+
+void Win32Window::SetMaximumSize(Size size) {
+  max_size_ = size;
 }
 
 bool Win32Window::OnCreate() {

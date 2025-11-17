@@ -5,6 +5,7 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 
 // A class abstraction for a high DPI-aware Win32 Window. Intended to be
@@ -15,13 +16,13 @@ class Win32Window {
   struct Point {
     unsigned int x;
     unsigned int y;
-    Point(unsigned int x, unsigned int y) : x(x), y(y) {}
+    constexpr Point(unsigned int x, unsigned int y) : x(x), y(y) {}
   };
 
   struct Size {
     unsigned int width;
     unsigned int height;
-    Size(unsigned int width, unsigned int height)
+    constexpr Size(unsigned int width, unsigned int height)
         : width(width), height(height) {}
   };
 
@@ -51,6 +52,12 @@ class Win32Window {
 
   // If true, closing this window will quit the application.
   void SetQuitOnClose(bool quit_on_close);
+
+  // Set the minimum size of the window content in logical pixels.
+  void SetMinimumSize(Size size);
+
+  // Set the maximum size of the window content in logical pixels.
+  void SetMaximumSize(Size size);
 
   // Return a RECT representing the bounds of the current client area.
   RECT GetClientArea();
@@ -97,6 +104,9 @@ class Win32Window {
 
   // window handle for hosted content.
   HWND child_content_ = nullptr;
+
+  std::optional<Size> min_size_;
+  std::optional<Size> max_size_;
 };
 
 #endif  // RUNNER_WIN32_WINDOW_H_

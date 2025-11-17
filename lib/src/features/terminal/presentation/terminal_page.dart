@@ -1959,7 +1959,7 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                                 lineNumbers: true,
                                 fontSize: 14,
                                 fontFamily:
-                                    'JetBrains Mono, SFMono-Regular, Menlo, monospace',
+                                    'JetBrains Mono, SFMono-Regular, Menlo, "Cascadia Code", "Cascadia Mono", Consolas, "Courier New", monospace',
                                 lineHeight: 1.35,
                                 wordWrap: true,
                                 scrollBeyondLastLine: false,

@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:dartssh2/dartssh2.dart';
 import 'package:file_selector/file_selector.dart' as file_selector;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -154,12 +155,19 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
       displayName: 'T$sessionNumber',
       terminal: Terminal(
         maxLines: 10000,
-        platform: TerminalTargetPlatform.macos,
+        platform: _terminalPlatform,
       ),
       controller: TerminalController(),
       pathController: TextEditingController(),
       focusNode: FocusNode(),
     );
+  }
+
+  TerminalTargetPlatform get _terminalPlatform {
+    if (defaultTargetPlatform == TargetPlatform.windows) {
+      return TerminalTargetPlatform.windows;
+    }
+    return TerminalTargetPlatform.macos;
   }
 
   void _addSession(Host host, Credential credential) {
@@ -312,6 +320,9 @@ class _TerminalPageState extends ConsumerState<TerminalPage> {
                                       ? Brightness.dark
                                       : Brightness.light,
                                   keyboardType: TextInputType.multiline,
+                                  hardwareKeyboardOnly:
+                                      defaultTargetPlatform ==
+                                          TargetPlatform.windows,
                                   backgroundOpacity: 1.0,
                                 ),
                               ),

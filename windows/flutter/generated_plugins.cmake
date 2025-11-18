@@ -5,7 +5,9 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   desktop_multi_window
   file_selector_windows
+  screen_retriever
   webview_windows
+  window_manager
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST

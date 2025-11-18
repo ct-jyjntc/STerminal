@@ -6,6 +6,7 @@
 #include <random>
 #include <sstream>
 #pragma comment(lib, "rpcrt4.lib")
+#include <algorithm>
 
 #include <iostream>
 #include "flutter_window.h"
@@ -48,9 +49,56 @@ std::string MultiWindowManager::Create(const flutter::EncodableMap* args) {
 
   auto flutter_window = std::make_unique<FlutterWindow>(window_id, config);
 
+  // Position new window near an existing one (usually the main window) to keep
+  // it visible and grouped, similar to the macOS behavior.
+  int origin_x = 10;
+  int origin_y = 10;
+  int width = 1100;
+  int height = 720;
+
+  if (!windows_.empty()) {
+    HWND anchor = windows_.begin()->second->GetWindowHandle();
+    if (anchor && IsWindow(anchor)) {
+      RECT anchor_rect{};
+      if (GetWindowRect(anchor, &anchor_rect)) {
+        const int anchor_width = anchor_rect.right - anchor_rect.left;
+        const int anchor_height = anchor_rect.bottom - anchor_rect.top;
+        width = anchor_width > width ? anchor_width : width;
+        height = anchor_height > height ? anchor_height : height;
+        origin_x = anchor_rect.left + 40;
+        origin_y = anchor_rect.top - 40;
+
+        MONITORINFO monitor_info{};
+        monitor_info.cbSize = sizeof(monitor_info);
+        HMONITOR monitor =
+            MonitorFromWindow(anchor, MONITOR_DEFAULTTONEAREST);
+        if (GetMonitorInfo(monitor, &monitor_info)) {
+          RECT work = monitor_info.rcWork;
+          if (origin_x + width > work.right) {
+            origin_x = work.right - width;
+          }
+          if (origin_y + height > work.bottom) {
+            origin_y = work.bottom - height;
+          }
+          if (origin_x < work.left) {
+            origin_x = work.left;
+          }
+          if (origin_y < work.top) {
+            origin_y = work.top;
+          }
+        }
+      }
+    }
+  }
+
+  origin_x = origin_x < 0 ? 0 : origin_x;
+  origin_y = origin_y < 0 ? 0 : origin_y;
+
   std::wstring title = L"";
-  Win32Window::Point origin(10, 10);
-  Win32Window::Size size(800, 600);
+  Win32Window::Point origin(static_cast<unsigned int>(origin_x),
+                            static_cast<unsigned int>(origin_y));
+  Win32Window::Size size(static_cast<unsigned int>(width),
+                         static_cast<unsigned int>(height));
 
   if (!flutter_window->Create(title, origin, size)) {
     std::cerr << "Failed to create window." << std::endl;
